@@ -1,0 +1,58 @@
+{
+  "base": "assets/audio/",
+  "music": {
+    "title": "music/title.mp3?v=lagos_afro_1",
+    "run": "music/run.mp3?v=lagos_afro_1",
+    "rocket": "music/rocket.mp3?v=lagos_afro_1"
+  },
+  "voice": {
+    "start": [
+      "voice/start_0.mp3?v=lagos_afro_1",
+      "voice/start_1.mp3?v=lagos_afro_1"
+    ],
+    "roll": [
+      "voice/roll_0.mp3?v=lagos_afro_1",
+      "voice/roll_1.mp3?v=lagos_afro_1"
+    ],
+    "closeCall": [
+      "voice/closeCall_0.mp3?v=lagos_afro_1",
+      "voice/closeCall_1.mp3?v=lagos_afro_1"
+    ],
+    "airLow": [
+      "voice/airLow_0.mp3?v=lagos_afro_1"
+    ],
+    "rocket": [
+      "voice/rocket_0.mp3?v=lagos_afro_1"
+    ],
+    "crash": [
+      "voice/crash_0.mp3?v=nawa_mechanic_3",
+      "voice/crash_1.mp3?v=nawa_mechanic_3"
+    ],
+    "combo": [
+      "voice/combo_0.mp3?v=lagos_afro_1",
+      "voice/combo_1.mp3?v=lagos_afro_1"
+    ],
+    "milestone": [
+      "voice/milestone_0.mp3?v=lagos_afro_1"
+    ],
+    "sky": [
+      "voice/sky_0.mp3?v=lagos_afro_1"
+    ]
+  },
+  "lines": {
+    "voice/start_0.mp3?v=lagos_afro_1": "Oya now! Traffic na for people wey no get wings!",
+    "voice/start_1.mp3?v=lagos_afro_1": "Third Mainland go hear am today! Clear road!",
+    "voice/roll_0.mp3?v=lagos_afro_1": "Gbe body e! Do barrel roll sharp sharp!",
+    "voice/roll_1.mp3?v=lagos_afro_1": "Chai! You dey spin like ceiling fan!",
+    "voice/closeCall_0.mp3?v=lagos_afro_1": "Ewooo! That Danfo almost clear your side mirror!",
+    "voice/closeCall_1.mp3?v=lagos_afro_1": "Too close, my guy! Blood of Zachariah!",
+    "voice/airLow_0.mp3?v=lagos_afro_1": "Chai, air tank don low o! Land make you recharge!",
+    "voice/rocket_0.mp3?v=lagos_afro_1": "Oya zoom! Full speed enter Lekki!",
+    "voice/crash_0.mp3?v=nawa_mechanic_3": "Na wa o, where I go see money give mechanic for repair?!",
+    "voice/crash_1.mp3?v=nawa_mechanic_3": "Chai! Na wa o, where I go see money give mechanic for repair now?!",
+    "voice/combo_0.mp3?v=lagos_afro_1": "Mad combo! You dey hot, Burna Boy level!",
+    "voice/combo_1.mp3?v=lagos_afro_1": "Steeze on a hundred! Odikwa sharp!",
+    "voice/milestone_0.mp3?v=lagos_afro_1": "One kilometer cleared! Eko oni baje o!",
+    "voice/sky_0.mp3?v=lagos_afro_1": "Look up! Other flying motors dey come!"
+  }
+}

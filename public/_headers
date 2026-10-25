@@ -1,0 +1,39 @@
+# GLB 3D models — cache for 1 year (they're content-hashed)
+/assets/*.glb
+  Cache-Control: public, max-age=31536000, immutable
+
+# Audio files — cache for 1 year
+/assets/audio/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# JS engine & CSS — cache for 1 year (content-hashed filenames)
+/assets/*.js
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.css
+  Cache-Control: public, max-age=31536000, immutable
+
+# Fonts — cache for 1 year
+/assets/*.woff2
+  Cache-Control: public, max-age=31536000, immutable
+
+# Textures & images — cache for 1 year
+/assets/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+# Intro video
+/assets/*.mp4
+  Cache-Control: public, max-age=31536000, immutable
+
+# HTML pages — always revalidate so updates deploy instantly
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/
+  Cache-Control: public, max-age=0, must-revalidate

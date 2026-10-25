@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#000000">
+    <title>Lagos Street Race</title>
+    <meta name="description" content="High-speed 3D endless street racer over the Lagos Third Mainland Bridge! Dodge Danfos, okadas, and container trucks with cold-gas thrusters and mid-air stunts.">
+    <meta property="og:title" content="Lagos Street Race">
+    <meta property="og:description" content="High-speed 3D endless street racer over the Lagos Third Mainland Bridge! Dodge Danfos, okadas, and container trucks with cold-gas thrusters and mid-air stunts.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/favicon-64-Ckz-V5wt.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32-DQ1sWQGl.png">
+    <link rel="icon" type="image/svg+xml" href="/assets/favicon-CGsbAfJf.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon-BOCLwkzK.png">
+    <link rel="preload" href="/assets/inter-latin-var-Dx4kXJAl.woff2" as="font" type="font/woff2" crossorigin>
+    <script>
+      window.__ERRORS__ = [];
+      window.addEventListener('error', (e) => {
+        window.__ERRORS__.push(String((e && (e.message || (e.error && e.error.message))) || 'error'));
+      });
+      window.addEventListener('unhandledrejection', (e) => {
+        window.__ERRORS__.push('unhandled: ' + String(e && e.reason && (e.reason.message || e.reason)));
+      });
+      (function () {
+        const orig = console.error.bind(console);
+        console.error = function (...args) {
+          try { window.__ERRORS__.push(args.map(String).join(' ')); } catch (_) {}
+          orig(...args);
+        };
+      })();
+    </script>
+
+    <!-- importmap: compiled bundle resolves 'three' from this vendor file -->
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./assets/vendor/three.module.js"
+        }
+      }
+    </script>
+
+    <script src="/assets/lagos-voice.js"></script>
+
+    <!--
+      ════════════════════════════════════════════════════════════════
+      THE GAME — compiled bundle. DO NOT replace with src/main.tsx.
+      The src/ folder is source code compiled into this bundle.
+      Switching to src/main.tsx loads a raw dev version of the game.
+      ════════════════════════════════════════════════════════════════
+    -->
+    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=vechiledaynight23"></script>
+
+    <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
+    <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
+    <link rel="stylesheet" href="/assets/controls.css?v=ctrl1">
+    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud4">
+    <style>
+      #boot {
+        position: fixed;
+        inset: 0;
+        background: #000;
+        overflow: hidden;
+      }
+      .boot-bg-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.8s ease-in-out;
+        pointer-events: none;
+      }
+      .boot-mark,
+      .boot-submark {
+        position: relative;
+        z-index: 2;
+        transition: opacity 0.7s ease-in-out, transform 0.7s ease-in-out;
+      }
+      .boot-submark {
+        letter-spacing: .35em;
+        text-transform: uppercase;
+        color: #22c55e;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 8px;
+        text-align: center;
+      }
+      /* Loading meter hidden until user initiates start */
+      .boot-meter {
+        z-index: 3;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.6s ease-in-out;
+      }
+      .boot.loading-active .boot-meter,
+      .boot.video-ready .boot-meter {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      /* Premium Glassmorphism Start Button */
+      .boot-enter-wrap {
+        position: absolute;
+        top: 66%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+        transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .boot.loading-active .boot-enter-wrap,
+      .boot.video-ready .boot-enter-wrap {
+        opacity: 0 !important;
+        transform: translate(-50%, -60%) scale(0.95);
+        pointer-events: none;
+      }
+      .boot-enter-btn {
+        position: relative;
+        background: rgba(14, 20, 32, 0.68);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-top: 1px solid rgba(255, 255, 255, 0.38);
+        box-shadow: 
+          0 12px 35px -5px rgba(0, 0, 0, 0.8),
+          0 0 25px rgba(34, 197, 94, 0.28),
+          inset 0 1px 1px 0 rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(20px) saturate(190%);
+        -webkit-backdrop-filter: blur(20px) saturate(190%);
+        border-radius: 9999px;
+        color: #ffffff;
+        padding: 14px 34px;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow: hidden;
+      }
+      .boot-enter-btn::before {
+        content: "";
+        position: absolute;
+        top: 0; left: -100%;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+        transition: left 0.75s ease;
+      }
+      .boot-enter-btn:hover::before {
+        left: 100%;
+      }
+      .boot-enter-btn:hover {
+        background: rgba(20, 30, 50, 0.82);
+        border-color: rgba(34, 197, 94, 0.65);
+        border-top-color: rgba(134, 239, 172, 0.9);
+        box-shadow: 
+          0 16px 45px -5px rgba(0, 0, 0, 0.9),
+          0 0 35px rgba(34, 197, 94, 0.55),
+          inset 0 1px 2px 0 rgba(255, 255, 255, 0.4);
+        transform: translateY(-2px) scale(1.03);
+      }
+      .boot-enter-btn:active {
+        transform: translateY(1px) scale(0.97);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.8), 0 0 15px rgba(34, 197, 94, 0.3);
+      }
+      .boot-enter-btn .play-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px; height: 26px;
+        border-radius: 50%;
+        background: rgba(34, 197, 94, 0.2);
+        border: 1px solid rgba(34, 197, 94, 0.6);
+        color: #22c55e;
+        transition: transform 0.2s, background 0.2s, color 0.2s;
+      }
+      .boot-enter-btn:hover .play-icon {
+        background: #22c55e;
+        color: #06070a;
+        transform: translateX(2px);
+      }
+      .boot-enter-hint {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.68);
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
+      }
+      .boot-enter-hint kbd {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 5px;
+        padding: 2px 7px;
+        font-family: inherit;
+        font-size: 10px;
+        font-weight: 600;
+        color: #86efac;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+      }
+      .boot-mute-btn {
+        position: absolute;
+        top: calc(20px + var(--safe-top, 0px));
+        right: 20px;
+        z-index: 10;
+        background: rgba(10, 14, 22, 0.72);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 24px;
+        color: #ffffff;
+        padding: 8px 16px;
+        font-family: inherit;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        transition: background 0.2s, border-color 0.2s, transform 0.15s, opacity 0.5s;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .boot.loading-active .boot-mute-btn,
+      .boot.video-ready .boot-mute-btn {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .boot-mute-btn:hover {
+        background: rgba(255, 255, 255, 0.18);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: scale(1.02);
+      }
+      .boot-mute-btn.is-muted {
+        color: rgba(255, 255, 255, 0.6);
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(0, 0, 0, 0.6);
+      }
+      .boot-mute-btn.is-muted .icon-sound-on {
+        display: none !important;
+      }
+      .boot-mute-btn.is-muted .icon-sound-off {
+        display: block !important;
+      }
+      .wm-main {
+        color: #22c55e !important;
+      }
+      /* When loading is activated */
+      .boot.loading-active .boot-bg-video,
+      .boot.video-ready .boot-bg-video {
+        opacity: 1;
+      }
+      .boot.loading-active .boot-mark,
+      .boot.loading-active .boot-submark,
+      .boot.video-ready .boot-mark,
+      .boot.video-ready .boot-submark {
+        opacity: 0 !important;
+        transform: translateY(-10px);
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="game" aria-label="Lagos Street Race game view"></canvas>
+    <div id="hud" aria-live="polite"></div>
+    <div id="boot" class="boot">
+      <video id="boot-bg-video" class="boot-bg-video" src="/assets/lagos_street_race_intro.mp4" playsinline loop preload="auto"></video>
+      <button id="boot-mute-btn" class="boot-mute-btn" aria-label="Toggle sound" title="Sound: ON (Click to turn off)">
+        <svg class="icon-sound-on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+        <svg class="icon-sound-off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        <span class="boot-sound-label">Sound On</span>
+      </button>
+      <div class="boot-mark"><img src="/assets/Lagos Street Race Logo.webp" alt="Lagos Street Race" style="max-width:280px;width:100%;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 0 16px rgba(245,158,11,0.5));" /></div>
+      <div class="boot-submark">Oya, Enter Lagos!</div>
+      <div id="boot-enter-wrap" class="boot-enter-wrap">
+        <button id="boot-enter-btn" class="boot-enter-btn">
+          <span class="play-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </span>
+          <span>ENTER LAGOS</span>
+        </button>
+        <div class="boot-enter-hint">Press <kbd>ENTER</kbd> or Click to Start</div>
+      </div>
+      <div class="boot-meter">
+        <div class="boot-line"><i></i></div>
+        <div class="boot-label"><span>Entering Lagos</span><span class="boot-pct">0%</span></div>
+      </div>
+    </div>
+
+    <script>
+      (function() {
+        const video = document.getElementById('boot-bg-video');
+        const boot = document.getElementById('boot');
+        const enterBtn = document.getElementById('boot-enter-btn');
+        const muteBtn = document.getElementById('boot-mute-btn');
+        const soundLabel = muteBtn ? muteBtn.querySelector('.boot-sound-label') : null;
+        if (!video || !boot) return;
+
+        let userManuallyMuted = false;
+        let activated = false;
+
+        // Promise so the engine NEVER navigates to hangar until user actually clicks start/Enter
+        let resolveUserStart;
+        window.__USER_START_PROMISE__ = new Promise(function(resolve) {
+          resolveUserStart = resolve;
+        });
+
+        function updateMuteUI(isMuted) {
+          if (!muteBtn) return;
+          if (isMuted) {
+            muteBtn.classList.add('is-muted');
+            if (soundLabel) soundLabel.textContent = 'Sound Off';
+            muteBtn.setAttribute('title', 'Sound: OFF (Click to turn on)');
+          } else {
+            muteBtn.classList.remove('is-muted');
+            if (soundLabel) soundLabel.textContent = 'Sound On';
+            muteBtn.setAttribute('title', 'Sound: ON (Click to turn off)');
+          }
+        }
+
+        // Default state: Sound ON
+        video.muted = false;
+        video.volume = 1.0;
+        updateMuteUI(false);
+
+        function enableSound() {
+          userManuallyMuted = false;
+          video.muted = false;
+          video.volume = 1.0;
+          try {
+            const p = video.play();
+            if (p !== undefined) {
+              p.catch(function(err) {
+                // If unmuted autoplay is blocked by browser policy on page transition, fallback to muted playback
+                video.muted = true;
+                video.play().catch(function() {});
+                updateMuteUI(true);
+              });
+            }
+          } catch (_) {
+            video.muted = true;
+            video.play().catch(function() {});
+          }
+          updateMuteUI(video.muted);
+        }
+
+        function disableSound() {
+          userManuallyMuted = true;
+          video.muted = true;
+          updateMuteUI(true);
+        }
+
+        function activateWithSound() {
+          if (activated) return;
+          activated = true;
+
+          // Transition to the loading state with video and meter
+          boot.classList.add('loading-active');
+          boot.classList.add('video-ready');
+
+          // Reset progress meter to 0%
+          const meterBar = document.querySelector('#boot .boot-line i');
+          const meterPct = document.querySelector('#boot .boot-pct');
+          if (meterBar) meterBar.style.transform = 'scaleX(0)';
+          if (meterPct) meterPct.textContent = '0%';
+
+          // Play video from beginning to end
+          video.currentTime = 0;
+          video.loop = false;
+
+          if (!userManuallyMuted) {
+            enableSound();
+          } else {
+            video.play().catch(function() {});
+          }
+
+          let meterAnimFrame = null;
+          let transitionDone = false;
+
+          function completeTransition() {
+            if (transitionDone) return;
+            transitionDone = true;
+            if (meterAnimFrame) cancelAnimationFrame(meterAnimFrame);
+            if (meterBar) meterBar.style.transform = 'scaleX(1)';
+            if (meterPct) meterPct.textContent = '100%';
+            try { sessionStorage.setItem('seen_intro', '1'); } catch (_) {}
+
+            setTimeout(function() {
+              if (resolveUserStart) {
+                resolveUserStart();
+                resolveUserStart = null;
+              }
+            }, 350);
+          }
+
+          function syncMeterWithVideo() {
+            if (transitionDone) return;
+            const dur = video.duration || 6.85;
+            const cur = video.currentTime;
+            const pct = Math.min(1, Math.max(0, cur / dur));
+            if (meterBar) meterBar.style.transform = 'scaleX(' + pct.toFixed(3) + ')';
+            if (meterPct) meterPct.textContent = Math.round(pct * 100) + '%';
+
+            if (cur >= dur - 0.1 || video.ended) {
+              completeTransition();
+            } else {
+              meterAnimFrame = requestAnimationFrame(syncMeterWithVideo);
+            }
+          }
+
+          video.addEventListener('ended', completeTransition, { once: true });
+          meterAnimFrame = requestAnimationFrame(syncMeterWithVideo);
+        }
+
+        // Check if launched directly from Garage / Hangar
+        const urlParams = new URLSearchParams(window.location.search);
+        const isRaceLaunch = urlParams.has('race') || urlParams.get('launch') === '1';
+
+        if (isRaceLaunch) {
+          boot.classList.add('loading-active');
+          boot.classList.add('video-ready');
+          const submark = document.querySelector('.boot-submark');
+          if (submark) submark.textContent = 'Entering Third Mainland Bridge...';
+          const meterStatus = document.querySelector('.boot-label span:first-child');
+          if (meterStatus) meterStatus.textContent = 'Loading Track';
+          
+          // Auto-trigger video and loading meter screen immediately
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', activateWithSound);
+          } else {
+            activateWithSound();
+          }
+        }
+
+        // Click to Enter button (for initial cold load)
+        if (enterBtn) {
+          enterBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            activateWithSound();
+          });
+        }
+
+        // Press Enter on keyboard to start
+        window.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            activateWithSound();
+          }
+        });
+
+        // User toggle to mute or unmute
+        if (muteBtn) {
+          muteBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            if (video.muted) {
+              enableSound();
+            } else {
+              disableSound();
+            }
+          });
+        }
+
+        // Stop video playback when boot overlay is closed/done
+        const observer = new MutationObserver(function() {
+          if (boot.classList.contains('done') || !document.body.contains(boot)) {
+            try { video.pause(); } catch (_) {}
+            observer.disconnect();
+          }
+        });
+        observer.observe(boot, { attributes: true, attributeFilter: ['class'] });
+      })();
+    </script>
+    <script src="/assets/speedometer.js?v=speed2"></script>
+    <script src="/assets/controls.js?v=ctrl1"></script>
+  </body>
+</html>

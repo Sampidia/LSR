@@ -1,0 +1,13 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Large backup archives — never commit these
+*.tar.gz
+assets_backup/
+public/assets/_unoptimised_backup/

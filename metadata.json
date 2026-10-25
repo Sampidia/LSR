@@ -1,0 +1,8 @@
+{
+  "name": "Lagos Street Race",
+  "description": "High-speed 3D endless runner featuring the flying Tesla Roadster with SpaceX cold gas thrusters, Samson Sky Switchblade, Jetson ONE, Klein Vision AirCar, Alef Model Zero, or PAL-V Liberty, traffic dodging, and mid-air stunts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
