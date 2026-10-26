@@ -1750,8 +1750,57 @@
         font-size: 14px !important;
       }
 
-      /* Sidebar panels already hidden at 960px — lock them down */
-      .hangar-left-col { display: none !important; }
+      /* Sidebar panels hidden at 960px — keep sidebar hidden, but
+         extract feature-hub-panel (Command Sector) as its own fixed card */
+      .hangar-left-col {
+        /* Override fixed sidebar layout — become a transparent pass-through */
+        display: block !important;
+        position: fixed !important;
+        /* Pin below header, left side — mirroring specs card on the right */
+        top: calc(62px + env(safe-area-inset-top, 0px)) !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        z-index: 12 !important;
+        gap: 0 !important;
+        pointer-events: none !important;
+      }
+      /* Vehicle Dossier — hide in portrait (too verbose) */
+      .vehicle-info-panel {
+        display: none !important;
+      }
+      /* Command Sector — compact pill card below specs card */
+      .feature-hub-panel {
+        display: block !important;
+        pointer-events: auto !important;
+        /* Sit just below the specs card (~120px tall) */
+        margin-top: 128px !important;
+        width: auto !important;
+        padding: 8px 12px !important;
+        border-radius: 14px !important;
+        background: rgba(8, 11, 20, 0.90) !important;
+        backdrop-filter: blur(18px) !important;
+        border: 1px solid rgba(0, 229, 255, 0.18) !important;
+        box-shadow: 0 8px 28px rgba(0,0,0,0.65) !important;
+      }
+      /* Compact hub grid — all tiles in one row */
+      .hub-tiles-grid {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 6px !important;
+      }
+      .hub-tile {
+        flex: 1 !important;
+        padding: 6px 4px !important;
+        min-height: 0 !important;
+        gap: 4px !important;
+      }
+      .hub-tile-icon-wrap {
+        width: 28px !important;
+        height: 28px !important;
+      }
+      .hub-tile-title { font-size: 8px !important; }
+      .hub-tile-subtitle { font-size: 8px !important; }
 
       /* Portrait: Specs panel becomes a compact 2-col card below the header */
       /* Positioned at TOP so it never collides with the bottom controls      */
