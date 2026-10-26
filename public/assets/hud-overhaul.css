@@ -741,3 +741,106 @@
     min-height: 44px !important;
   }
 }
+
+/* ── 6. PORTRAIT GAMEPLAY HUD ────────────────────────────────────────── */
+@media (orientation: portrait) {
+  /* Hide sound/mute button — audio icon clutters portrait HUD */
+  #hud .mute-btn:not(.pause-btn) {
+    display: none !important;
+  }
+
+  /* Score card — compact */
+  .hud-left {
+    top: calc(6px + env(safe-area-inset-top, 0px)) !important;
+    left: 6px !important;
+    max-width: calc(58vw) !important;
+  }
+  .score-card {
+    padding: 6px 10px 8px !important;
+    border-radius: 10px !important;
+  }
+  .score-value {
+    font-size: 22px !important;
+    margin: 2px 0 5px !important;
+  }
+  .score-sub {
+    font-size: 10px !important;
+    padding-top: 4px !important;
+  }
+
+  /* HUD right — shift inward so gauge does not clip */
+  .hud-right {
+    right: calc(var(--gauge-size, 100px) + 8px) !important;
+    gap: 5px !important;
+  }
+
+  /* Pause button only — compact */
+  .mute-btn {
+    width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    border-radius: 9px !important;
+  }
+  .mute-btn svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
+  /* Bolts card — slim */
+  .bolts-card {
+    height: 34px !important;
+    padding: 0 8px !important;
+    border-radius: 9px !important;
+  }
+  .bolts-value {
+    font-size: 14px !important;
+  }
+
+  /* Pause / Game-over modal — full safe width */
+  .card {
+    padding: 22px 18px 18px !important;
+    width: 92vw !important;
+    max-width: 92vw !important;
+    border-radius: 18px !important;
+  }
+  .card h2 {
+    font-size: 22px !important;
+  }
+  .card .quip {
+    font-size: 12px !important;
+    margin: 8px 0 18px !important;
+  }
+  .card-gameover .go-head {
+    font-size: 24px !important;
+  }
+  .card-gameover .go-quip {
+    font-size: 12px !important;
+  }
+  .big-score.go-score {
+    font-size: 38px !important;
+  }
+
+  /* Stack modal action buttons vertically */
+  .cyber-modal-actions {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .btn-cyber-primary,
+  .btn-cyber-secondary {
+    width: 100% !important;
+    min-height: 48px !important;
+    font-size: 12px !important;
+  }
+
+  /* Stats panel — compact */
+  .stats.go-stats-cyber {
+    padding: 10px !important;
+    margin: 12px 0 18px !important;
+  }
+  .stats-col b {
+    font-size: 16px !important;
+  }
+  .stats-col span {
+    font-size: 8px !important;
+  }
+}

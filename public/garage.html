@@ -1607,6 +1607,164 @@
       background-color: #0a0e1a;
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+       PORTRAIT RESPONSIVENESS — Phases 1, 3b, 5
+       ═══════════════════════════════════════════════════════════════ */
+
+    /* Phase 1: Hide audio icon in portrait */
+    @media (orientation: portrait) {
+      .hangar-music-btn { display: none !important; }
+    }
+
+    /* Phase 3b: Portrait bottom bar + vehicle slider */
+    /* Slider elements — hidden in landscape by default */
+    .vehicle-slider-wrap {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+    }
+    .slider-track {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .slider-inner {
+      display: flex;
+      transition: transform 0.38s cubic-bezier(0.25, 1, 0.5, 1);
+      will-change: transform;
+    }
+    .slider-slide {
+      flex: 0 0 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 10px;
+      gap: 2px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .slider-slide .card-type {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-transform: uppercase;
+    }
+    .slider-slide .card-name {
+      font-size: 16px;
+      font-weight: 900;
+      color: #fff;
+      text-align: center;
+    }
+    .slider-arrow {
+      flex-shrink: 0;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      color: var(--accent-cyan);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .slider-arrow:hover, .slider-arrow:active {
+      background: rgba(0, 229, 255, 0.22);
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+    }
+    .slider-dots {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      gap: 6px;
+    }
+    .slider-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+      padding: 0;
+    }
+    .slider-dot.active {
+      background: var(--accent-cyan);
+      box-shadow: 0 0 8px var(--accent-cyan);
+      width: 18px;
+      border-radius: 3px;
+    }
+
+    /* Phase 5: Hint text variants */
+    .hint-mobile { display: none; }
+
+    @media (orientation: portrait) {
+      /* Hide audio icon (belt-and-suspenders) */
+      .hangar-music-btn { display: none !important; }
+
+      /* Hide desktop keyboard hint */
+      .orbit-hint .hint-desktop { display: none !important; }
+      .orbit-hint .hint-mobile  { display: inline !important; }
+      .orbit-hint {
+        bottom: calc(var(--bottom-sel-h, 118px) + 10px);
+        font-size: 10px;
+        padding: 6px 16px;
+      }
+
+      /* Bottom selector: stack vertically, stretch full width */
+      .bottom-selector {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        padding: 10px 14px 14px !important;
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 10px !important;
+        right: 10px !important;
+        width: auto !important;
+        transform: none !important;
+        border-radius: 20px !important;
+        max-width: none !important;
+      }
+
+      /* Show slider, hide landscape flat card row */
+      .vehicle-slider-wrap { display: flex !important; }
+      .slider-dots         { display: flex !important; }
+      .car-cards-wrap      { display: none !important; }
+
+      /* Launch button full-width pill */
+      .launch-btn {
+        width: 100% !important;
+        justify-content: center !important;
+        border-radius: 14px !important;
+        padding: 14px 20px !important;
+        font-size: 14px !important;
+      }
+
+      /* Sidebar panels already hidden at 960px — lock them down */
+      .hangar-left-col, .specs-panel-right { display: none !important; }
+
+      /* Compact logo */
+      .brand-logo-img {
+        height: 55px !important;
+        max-height: 8vh !important;
+      }
+
+      /* Header padding */
+      header { padding: 8px 14px !important; }
+
+      /* Day/Night toggle — compact */
+      .tod-btn {
+        font-size: 10px !important;
+        padding: 5px 10px !important;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2244,8 +2402,25 @@
   </aside>
 
   <!-- Bottom: Vehicle Selector Cards & Launch Button -->
-  <div class="bottom-selector">
-    <div class="car-cards-wrap">
+  <div class="bottom-selector" id="bottom-selector">
+
+    <!-- PORTRAIT: swipe slider (hidden in landscape via CSS) -->
+    <div class="vehicle-slider-wrap" id="vehicle-slider-wrap">
+      <button class="slider-arrow" id="slider-prev" aria-label="Previous vehicle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <div class="slider-track" id="slider-track">
+        <!-- slides injected by initSlider() -->
+      </div>
+      <button class="slider-arrow" id="slider-next" aria-label="Next vehicle">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <!-- Slider pagination dots (portrait only) -->
+    <div class="slider-dots" id="slider-dots"></div>
+
+    <!-- LANDSCAPE: original flat card row (hidden in portrait via CSS) -->
+    <div class="car-cards-wrap" id="car-cards-wrap">
       <div class="car-card" id="card-flying_t" onclick="selectCar('flying_t')">
         <span class="card-type">Interceptor</span>
         <span class="card-name">Flying T</span>
@@ -2266,14 +2441,15 @@
   </div>
 
   <!-- Clean Hint without bullets or empty dots -->
-  <div class="orbit-hint">
-    <span>Click & Drag to Orbit</span>
-    <span class="hint-sep">/</span>
-    <span>Scroll to Zoom</span>
-    <span class="hint-sep">/</span>
-    <span>[1-3] Select Car</span>
-    <span class="hint-sep">/</span>
-    <span>Space to Launch</span>
+  <div class="orbit-hint" id="orbit-hint">
+    <span class="hint-desktop">Click &amp; Drag to Orbit</span>
+    <span class="hint-sep hint-desktop">/</span>
+    <span class="hint-desktop">Scroll to Zoom</span>
+    <span class="hint-sep hint-desktop">/</span>
+    <span class="hint-desktop">[1-3] Select Car</span>
+    <span class="hint-sep hint-desktop">/</span>
+    <span class="hint-desktop">Space to Launch</span>
+    <span class="hint-mobile">Drag to Orbit &middot; Pinch to Zoom</span>
   </div>
 
   <!-- Scripts: Three.js GLTF Bundle and Player Roadster Helper -->
@@ -2788,12 +2964,132 @@
 
     window.addEventListener('mouseup', () => {
       isDragging = false;
+      setTimeout(() => { if (!isDragging && !isTouching) autoRotate = true; }, 2500);
     });
 
     window.addEventListener('wheel', (e) => {
       if (e.target.closest('header, aside, .bottom-selector')) return;
       cameraRadius = Math.max(6.0, Math.min(16.0, cameraRadius + e.deltaY * 0.008));
     }, { passive: true });
+
+    /* ── TOUCH ORBIT CONTROLS (Phase 2) ──────────────────────────────── */
+    let isTouching = false;
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastPinchDist = 0;
+    const canvasZone = document.getElementById('canvas-container');
+
+    canvasZone.addEventListener('touchstart', (e) => {
+      if (e.target.closest('header, .bottom-selector, .orbit-hint, aside')) return;
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        isTouching = true;
+        autoRotate = false;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    }, { passive: false });
+
+    canvasZone.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (lastPinchDist > 0) {
+          cameraRadius = Math.max(6.0, Math.min(16.0, cameraRadius - (dist - lastPinchDist) * 0.04));
+        }
+        lastPinchDist = dist;
+        return;
+      }
+      if (!isTouching || e.touches.length !== 1) return;
+      e.preventDefault();
+      const dx = e.touches[0].clientX - touchStartX;
+      const dy = e.touches[0].clientY - touchStartY;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      targetAzimuth -= dx * 0.008;
+      targetPolar = Math.max(0.1, Math.min(1.2, targetPolar + dy * 0.006));
+    }, { passive: false });
+
+    canvasZone.addEventListener('touchend', () => {
+      isTouching = false;
+      lastPinchDist = 0;
+      setTimeout(() => { if (!isTouching && !isDragging) autoRotate = true; }, 2500);
+    });
+
+    /* ── PORTRAIT VEHICLE SLIDER (Phase 3c) ──────────────────────────── */
+    (function initSlider() {
+      const VEHICLE_KEYS = Object.keys(VEHICLES);
+      const VEHICLE_META = {
+        flying_t:        { type: 'Interceptor', name: 'Flying T' },
+        flying_danfo:    { type: 'Heavy Ion',   name: 'Flying Danfo' },
+        flying_tortoise: { type: 'Jet Cruiser', name: 'Flying Tortoise' }
+      };
+      let sliderIdx = VEHICLE_KEYS.indexOf(currentCarKey) || 0;
+
+      const sliderTrack = document.getElementById('slider-track');
+      const sliderDots  = document.getElementById('slider-dots');
+      const prevBtn     = document.getElementById('slider-prev');
+      const nextBtn     = document.getElementById('slider-next');
+      if (!sliderTrack) return;
+
+      // Build slide inner
+      const inner = document.createElement('div');
+      inner.className = 'slider-inner';
+      inner.id = 'slider-inner';
+      VEHICLE_KEYS.forEach((key) => {
+        const meta = VEHICLE_META[key] || { type: '', name: key };
+        const slide = document.createElement('div');
+        slide.className = 'slider-slide';
+        slide.dataset.key = key;
+        slide.innerHTML = `<span class="card-type">${meta.type}</span><span class="card-name">${meta.name}</span>`;
+        slide.addEventListener('click', () => selectCar(key));
+        inner.appendChild(slide);
+      });
+      sliderTrack.appendChild(inner);
+
+      // Build pagination dots
+      VEHICLE_KEYS.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.className = 'slider-dot' + (i === sliderIdx ? ' active' : '');
+        dot.setAttribute('aria-label', `Select vehicle ${i + 1}`);
+        dot.addEventListener('click', () => goToSlide(i));
+        sliderDots.appendChild(dot);
+      });
+
+      function goToSlide(idx) {
+        sliderIdx = Math.max(0, Math.min(VEHICLE_KEYS.length - 1, idx));
+        inner.style.transform = `translateX(-${sliderIdx * 100}%)`;
+        sliderDots.querySelectorAll('.slider-dot').forEach((d, i) =>
+          d.classList.toggle('active', i === sliderIdx));
+        selectCar(VEHICLE_KEYS[sliderIdx]);
+      }
+
+      prevBtn && prevBtn.addEventListener('click', () => goToSlide(sliderIdx - 1));
+      nextBtn && nextBtn.addEventListener('click', () => goToSlide(sliderIdx + 1));
+
+      // Swipe gesture on the slider itself
+      let swipeStartX = 0;
+      inner.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
+      inner.addEventListener('touchend',   e => {
+        const diff = swipeStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) > 40) goToSlide(sliderIdx + (diff > 0 ? 1 : -1));
+      });
+
+      // Keep slider in sync when keyboard selects a car
+      const origSelectCar = window.selectCar;
+      window.selectCar = function(key) {
+        origSelectCar(key);
+        const newIdx = VEHICLE_KEYS.indexOf(key);
+        if (newIdx !== -1 && newIdx !== sliderIdx) {
+          sliderIdx = newIdx;
+          inner.style.transform = `translateX(-${sliderIdx * 100}%)`;
+          sliderDots.querySelectorAll('.slider-dot').forEach((d, i) =>
+            d.classList.toggle('active', i === sliderIdx));
+        }
+      };
+    })();
 
     // Keyboard shortcuts
     window.addEventListener('keydown', (e) => {

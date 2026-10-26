@@ -361,3 +361,48 @@
     display: none !important;
   }
 }
+
+/* ── PORTRAIT: Roll-Right / Fly Button Separation ────────────────────── */
+/* Root cause: touch-fly (112×56px) bleeds up into touch-roll (52×44px)   */
+/* with only 8px gap. Fix: increase gap, enlarge roll targets, shrink fly. */
+@media (orientation: portrait) {
+  /* More breathing room between all cluster rows */
+  .touch-cluster {
+    gap: 16px !important;
+  }
+
+  /* aux row (rollRight + dive): add explicit bottom margin as buffer */
+  .touch-aux-row {
+    gap: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  /* Larger certified hit-zone for both roll buttons */
+  .touch-btn.touch-roll {
+    min-height: 48px !important;
+    height: 48px !important;
+    min-width: 62px !important;
+    touch-action: none !important;
+    border-color: rgba(181, 55, 242, 0.55) !important;
+  }
+
+  /* Shrink fly button footprint so it cannot bleed into rollRight above */
+  .touch-btn.touch-fly {
+    height: 50px !important;
+    width: 92px !important;
+    font-size: 10px !important;
+    letter-spacing: 0.2em !important;
+  }
+
+  /* Accel pedal — slightly narrower to fit portrait width */
+  .touch-btn.touch-accel {
+    min-width: 92px !important;
+    height: 50px !important;
+  }
+
+  /* Primary row (fly + accel) — explicit extra top gap */
+  .touch-primary-row {
+    gap: 10px !important;
+    margin-top: 0 !important;
+  }
+}
