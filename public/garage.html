@@ -432,7 +432,8 @@
       bottom: 114px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 9;
+      z-index: 11;
+      white-space: nowrap;
       font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.14em;
@@ -1712,9 +1713,14 @@
       .orbit-hint .hint-desktop { display: none !important; }
       .orbit-hint .hint-mobile  { display: inline !important; }
       .orbit-hint {
-        bottom: calc(var(--bottom-sel-h, 118px) + 10px);
+        /* Portrait: float above the vehicle slider + launch button stack */
+        bottom: calc(200px + env(safe-area-inset-bottom, 0px)) !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        z-index: 50 !important;
+        white-space: nowrap !important;
         font-size: 10px;
-        padding: 6px 16px;
+        padding: 6px 18px;
       }
 
       /* Bottom selector: stack vertically, stretch full width */
