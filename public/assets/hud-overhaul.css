@@ -843,4 +843,34 @@
   .stats-col span {
     font-size: 8px !important;
   }
+
+  /* Fix 1: Touch hint — push up above controls in portrait
+     The hint bar was sitting at the default bottom:108px which caused
+     it to overlap with the ROLL/DIVE/BOOST/FLY cluster.              */
+  .touch-hint {
+    bottom: calc(188px + env(safe-area-inset-bottom, 0px)) !important;
+    font-size: 9px !important;
+    max-width: calc(100vw - 32px) !important;
+    text-align: center !important;
+    letter-spacing: 0.09em !important;
+    line-height: 1.55 !important;
+    padding: 6px 12px !important;
+    border-radius: 10px !important;
+    white-space: normal !important;
+  }
+
+  /* Fix 2: BOOST / accel button — restore enough height to contain
+     the perforations grid (6 dots) + flame icon + BOOST label.
+     Phase 6 wrongly set this to 50px which causes content to bleed out. */
+  .touch-btn.touch-accel {
+    height: 80px !important;    /* was reduced to 50px — needs 80px minimum */
+    min-width: 88px !important;
+    padding: 8px 10px !important;
+    overflow: hidden !important;  /* clip any edge bleed */
+  }
+  /* Keep fly button at its Phase 6 fix (50px is fine — less content) */
+  .touch-btn.touch-fly {
+    height: 50px !important;
+    width: 92px !important;
+  }
 }

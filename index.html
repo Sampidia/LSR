@@ -55,7 +55,7 @@
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
     <link rel="stylesheet" href="/assets/controls.css?v=ctrl2">
-    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud5">
+    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud6">
     <style>
       #boot {
         position: fixed;
@@ -485,6 +485,54 @@
       })();
     </script>
     <script src="/assets/speedometer.js?v=speed2"></script>
-    <script src="/assets/controls.js?v=ctrl1"></script>
+    <script src="/assets/controls.js?v=ctrl2"></script>
+    <script>
+    /* ── TOD (Time-Of-Day) Guardian — Bug 3 Fix ─────────────────────────
+       Problem: window.__LAGOS_TOD__ is set once at boot from the URL param.
+       On retry, _resetWorld() resets the scene to TOD=0 but __LAGOS_TOD__
+       is still 'night', causing the next _play() tick to immediately force
+       TOD=1.0 (night), making "day" look dark after several retries.
+       Fix: re-assert __LAGOS_TOD__ correctly from localStorage every time
+       the game calls start() / _resetWorld().
+    ──────────────────────────────────────────────────────────────────── */
+    (function patchTODGuardian() {
+      // 1. Set __LAGOS_TOD__ immediately from URL param (may override any
+      //    stale value left from a previous session on the same page load).
+      (function applyTOD() {
+        const tod = new URLSearchParams(location.search).get('tod')
+                    || localStorage.getItem('lagos_time_of_day')
+                    || 'day';
+        window.__LAGOS_TOD__ = tod;
+      })();
+
+      // 2. Wait for the game object to exist, then wrap start() so that
+      //    __LAGOS_TOD__ is refreshed from localStorage before _resetWorld.
+      let _attempts = 0;
+      function tryPatch() {
+        const g = window.__GAME__ && window.__GAME__.game;
+        if (!g) {
+          if (++_attempts < 200) setTimeout(tryPatch, 100);
+          return;
+        }
+        const origStart = g.start.bind(g);
+        g.start = function() {
+          // Re-read the authoritative TOD from localStorage on every retry
+          const tod = new URLSearchParams(location.search).get('tod')
+                      || localStorage.getItem('lagos_time_of_day')
+                      || 'day';
+          window.__LAGOS_TOD__ = tod;
+          // Also sync to the world immediately so _resetWorld's setTimeOfDay(0)
+          // then gets overridden by the correct value on first _play() tick
+          if (g.world && typeof g.world.setTimeOfDay === 'function') {
+            g.world.setTimeOfDay(tod === 'night' ? 1.0 : 0);
+            g.lastTod = (tod === 'night' ? 1.0 : 0);
+          }
+          return origStart();
+        };
+        console.log('[TODGuardian] Patched — TOD:', window.__LAGOS_TOD__);
+      }
+      setTimeout(tryPatch, 500);
+    })();
+    </script>
   </body>
 </html>
