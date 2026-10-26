@@ -1,0 +1,12 @@
+name = "lsr"
+compatibility_date = "2026-10-26"
+compatibility_flags = ["nodejs_compat"]
+
+# ── Static Asset Worker (Cloudflare Workers Static Assets) ──────────────
+# Serves the built dist/ folder as a static site via Cloudflare's edge.
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"
+
+[observability]
+enabled = true
