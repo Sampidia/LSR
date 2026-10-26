@@ -1758,6 +1758,7 @@
       /* Portrait: Specs panel becomes a compact 2-col card below the header */
       /* Positioned at TOP so it never collides with the bottom controls      */
       .specs-panel-right {
+        display: block !important;   /* override max-width:960px { display:none } */
         position: fixed !important;
         top: calc(62px + env(safe-area-inset-top, 0px)) !important;
         bottom: auto !important;
