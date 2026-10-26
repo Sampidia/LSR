@@ -363,30 +363,36 @@
 }
 
 /* ── PORTRAIT: Roll-Right / Fly Button Separation ────────────────────── */
-/* Root cause: touch-fly (112×56px) bleeds up into touch-roll (52×44px)   */
-/* with only 8px gap. Fix: increase gap, enlarge roll targets, shrink fly. */
+/* Root cause: only ~22px between rollRight bottom and fly top — thumb     */
+/* drift easily misfires. Fix: 40px explicit dead zone via margin-bottom.  */
 @media (orientation: portrait) {
-  /* More breathing room between all cluster rows */
+
+  /* Zero out cluster flex gap — use explicit margins for precise control */
   .touch-cluster {
-    gap: 16px !important;
+    gap: 0 !important;
   }
 
-  /* aux row (rollRight + dive): add explicit bottom margin as buffer */
+  /* aux row (rollRight + dive): 40px dead zone below before fly row */
   .touch-aux-row {
     gap: 10px !important;
-    margin-bottom: 6px !important;
+    margin-bottom: 40px !important;
   }
 
   /* Larger certified hit-zone for both roll buttons */
   .touch-btn.touch-roll {
-    min-height: 48px !important;
-    height: 48px !important;
-    min-width: 62px !important;
+    min-height: 52px !important;
+    height: 52px !important;
+    min-width: 64px !important;
     touch-action: none !important;
-    border-color: rgba(181, 55, 242, 0.55) !important;
+    /* Purple border so player clearly distinguishes it from fly */
+    border-color: rgba(181, 55, 242, 0.65) !important;
+    box-shadow:
+      0 0 0 3px rgba(181, 55, 242, 0.15),
+      0 8px 24px rgba(0, 0, 0, 0.7),
+      inset 0 1px 1px rgba(255, 255, 255, 0.25) !important;
   }
 
-  /* Shrink fly button footprint so it cannot bleed into rollRight above */
+  /* Shrink fly button footprint so it cannot bleed up into rollRight */
   .touch-btn.touch-fly {
     height: 50px !important;
     width: 92px !important;
@@ -394,15 +400,20 @@
     letter-spacing: 0.2em !important;
   }
 
-  /* Accel pedal — slightly narrower to fit portrait width */
+  /* Accel pedal — narrower to fit portrait width */
   .touch-btn.touch-accel {
     min-width: 92px !important;
     height: 50px !important;
   }
 
-  /* Primary row (fly + accel) — explicit extra top gap */
+  /* Primary row: zero top margin — spacing handled by aux-row margin-bottom */
   .touch-primary-row {
     gap: 10px !important;
     margin-top: 0 !important;
+  }
+
+  /* Left cluster: keep the roll-left button clearly separated from steering */
+  .touch-cluster.touch-left {
+    gap: 14px !important;
   }
 }
