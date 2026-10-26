@@ -1702,6 +1702,61 @@
 
     /* Phase 5: Hint text variants */
     .hint-mobile { display: none; }
+    /* ── Minimal "Coming Soon" teaser dialog ──────────────────────────── */
+    .cyber-stage-dialog.teaser-simple {
+      max-width: 340px !important;
+      width: 90vw !important;
+      padding: 0 !important;
+      border-radius: 20px !important;
+    }
+    .teaser-simple-body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 36px 28px 28px;
+      gap: 10px;
+    }
+    .teaser-simple-icon {
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 4px;
+      filter: drop-shadow(0 0 18px rgba(0,229,255,0.4));
+    }
+    .teaser-simple-title {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: 0.02em;
+      color: #fff;
+      margin: 0;
+      text-transform: none;
+    }
+    .teaser-simple-msg {
+      font-size: 13px;
+      color: #a4b3c6;
+      line-height: 1.5;
+      margin: 0;
+      max-width: 240px;
+    }
+    .teaser-simple-close {
+      margin-top: 12px;
+      padding: 10px 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,229,255,0.4);
+      background: rgba(0,229,255,0.12);
+      color: var(--accent-cyan);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, box-shadow 0.2s;
+    }
+    .teaser-simple-close:hover {
+      background: rgba(0,229,255,0.22);
+      box-shadow: 0 0 18px rgba(0,229,255,0.3);
+    }
 
     @media (orientation: portrait) {
       /* Hide audio icon (belt-and-suspenders) */
@@ -2253,60 +2308,15 @@
   </div>
   <!-- AAA Video Game Leaderboard Stage Dialog Overlay -->
   <div class="cyber-modal-overlay" id="leaderboard-dialog-overlay" onclick="if(event.target===this)window.closeTeaserModal()">
-    <div class="cyber-stage-dialog" role="dialog" aria-modal="true" aria-labelledby="lb-stage-title" style="max-width: 880px;">
-      <div class="stage-frame-reticle top-left"></div>
-      <div class="stage-frame-reticle top-right"></div>
-      <div class="stage-frame-reticle bottom-left"></div>
-      <div class="stage-frame-reticle bottom-right"></div>
-
-      <div class="stage-header">
-        <div class="stage-header-left">
-          <div class="stage-breadcrumb">
-            <span class="hud-blink-dot" style="background:#f59e0b;box-shadow:0 0 8px #f59e0b;"></span>
-            <span style="color:#f59e0b;">GLOBAL EXPANSION // TOURNAMENT LEADERBOARD</span>
-            <span class="hud-sep">/</span>
-            <span class="hud-dim">REGIONAL SATELLITE UPLINK: ACTIVE</span>
-          </div>
-          <h2 class="stage-title" id="lb-stage-title">GLOBAL LEADERBOARD</h2>
-          <div class="stage-telemetry-row">
-            <span class="tel-item"><span class="tel-k">CIRCUIT:</span> <span class="tel-v">ALL LAGOS TRACKS</span></span>
-            <span class="tel-item"><span class="tel-k">STANDINGS:</span> <span class="tel-v">WORLD PILOT CUP</span></span>
-            <span class="tel-item"><span class="tel-k">STATUS:</span> <span class="tel-v" style="color:#f59e0b;">EXPANSION PHASE 2</span></span>
-          </div>
-        </div>
-
-        <button class="stage-close-btn" onclick="window.closeTeaserModal()" title="Close (ESC)">
-          <span>CLOSE</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+    <div class="cyber-stage-dialog teaser-simple" role="dialog" aria-modal="true" aria-labelledby="lb-stage-title">
+      <div class="teaser-simple-body">
+        <div class="teaser-simple-icon">🏆</div>
+        <h2 class="teaser-simple-title" id="lb-stage-title">Global Leaderboard</h2>
+        <p class="teaser-simple-msg">Compete with pilots worldwide. Coming in the next update.</p>
+        <button class="teaser-simple-close" onclick="window.closeTeaserModal()">Got it</button>
       </div>
-
-      <div class="teaser-showcase-grid">
-        <div class="teaser-showcase-art">
-          <img src="/assets/features/leaderboard.webp" alt="Global Leaderboard Championship" class="stage-art-img">
-          <div class="stage-art-scanline"></div>
-          <div class="stage-art-vignette"></div>
-          <div class="stage-art-top-row">
-            <span class="sec-index-tag" style="border-color:rgba(245,197,24,0.4);color:#f5c518;">🏆 TOURNAMENT ARENA</span>
-            <span class="stage-status-badge locked-badge" style="background:rgba(245,197,24,0.2);">COMING SOON</span>
-          </div>
-          <div class="stage-art-bottom-row">
-            <span class="surface-badge">LAGOS GRAND PRIX</span>
-            <span class="speed-record-badge">PB: 148,250 PTS</span>
-          </div>
-        </div>
-
-        <div class="teaser-features-col">
-          <div class="teaser-feat-card">
-            <div class="teaser-feat-icon gold">👑</div>
-            <div>
-              <div class="teaser-feat-title">Global Sprint Cups</div>
-              <div class="teaser-feat-desc">Compete with Lagos pilots worldwide for the fastest Third Mainland Bridge record and global rankings.</div>
-            </div>
-          </div>
+    </div>
+  </div>
           <div class="teaser-feat-card">
             <div class="teaser-feat-icon cyan">⚡</div>
             <div>
@@ -2346,60 +2356,15 @@
 
   <!-- AAA Video Game Custom Cars Stage Dialog Overlay -->
   <div class="cyber-modal-overlay" id="custom-cars-dialog-overlay" onclick="if(event.target===this)window.closeTeaserModal()">
-    <div class="cyber-stage-dialog" role="dialog" aria-modal="true" aria-labelledby="custom-stage-title" style="max-width: 880px;">
-      <div class="stage-frame-reticle top-left"></div>
-      <div class="stage-frame-reticle top-right"></div>
-      <div class="stage-frame-reticle bottom-left"></div>
-      <div class="stage-frame-reticle bottom-right"></div>
-
-      <div class="stage-header">
-        <div class="stage-header-left">
-          <div class="stage-breadcrumb">
-            <span class="hud-blink-dot" style="background:#ff4d6d;box-shadow:0 0 8px #ff4d6d;"></span>
-            <span style="color:#ff4d6d;">CUSTOM WORKSHOP // TUNING & LIVERIES</span>
-            <span class="hud-sep">/</span>
-            <span class="hud-dim">CYBER DOCK: UNDER CONSTRUCTION</span>
-          </div>
-          <h2 class="stage-title" id="custom-stage-title">CUSTOM CARS GARAGE</h2>
-          <div class="stage-telemetry-row">
-            <span class="tel-item"><span class="tel-k">BAY:</span> <span class="tel-v">CYBER GARAGE 2077</span></span>
-            <span class="tel-item"><span class="tel-k">SYSTEM:</span> <span class="tel-v">ROBOTIC MOD SUITE</span></span>
-            <span class="tel-item"><span class="tel-k">STATUS:</span> <span class="tel-v" style="color:#ff4d6d;">UNDER CONSTRUCTION</span></span>
-          </div>
-        </div>
-
-        <button class="stage-close-btn" onclick="window.closeTeaserModal()" title="Close (ESC)">
-          <span>CLOSE</span>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+    <div class="cyber-stage-dialog teaser-simple" role="dialog" aria-modal="true" aria-labelledby="custom-stage-title">
+      <div class="teaser-simple-body">
+        <div class="teaser-simple-icon">🛠️</div>
+        <h2 class="teaser-simple-title" id="custom-stage-title">Custom Cars</h2>
+        <p class="teaser-simple-msg">Tune, wrap and mod your ride. Coming in the next update.</p>
+        <button class="teaser-simple-close" onclick="window.closeTeaserModal()">Got it</button>
       </div>
-
-      <div class="teaser-showcase-grid">
-        <div class="teaser-showcase-art">
-          <img src="/assets/features/custom_cars.webp" alt="Custom Tuning Workshop" class="stage-art-img">
-          <div class="stage-art-scanline"></div>
-          <div class="stage-art-vignette"></div>
-          <div class="stage-art-top-row">
-            <span class="sec-index-tag" style="border-color:rgba(255,77,109,0.4);color:#ff4d6d;">🛠️ CYBER WORKSHOP</span>
-            <span class="stage-status-badge locked-badge" style="background:rgba(255,77,109,0.2);color:#ff4d6d;border-color:rgba(255,77,109,0.4);">IN DEV</span>
-          </div>
-          <div class="stage-art-bottom-row">
-            <span class="surface-badge">WIDEBODY & UNDERGLOW</span>
-            <span class="speed-record-badge" style="color:#ff4d6d;">12 MOD SLOTS</span>
-          </div>
-        </div>
-
-        <div class="teaser-features-col">
-          <div class="teaser-feat-card">
-            <div class="teaser-feat-icon red">🚀</div>
-            <div>
-              <div class="teaser-feat-title">Ion Thruster Overclocking</div>
-              <div class="teaser-feat-desc">Fine-tune thruster pulse frequencies, nitro burn rates, and cold-gas atmospheric stabilizer balance.</div>
-            </div>
-          </div>
+    </div>
+  </div>
           <div class="teaser-feat-card">
             <div class="teaser-feat-icon cyan">🎨</div>
             <div>
