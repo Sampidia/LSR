@@ -255,76 +255,105 @@
         // 1. Restore game state
         g.mode   = 'playing';
         g.crashT = 0;
+        g.overT  = 0;
 
-        // 2. Restore player alive flag
-        p.alive = true;
-        if (typeof p.recoverFromCrash === 'function') p.recoverFromCrash();
-
-        // 3. Grant 3s invulnerability via _rollIframe
-        //    (invulnerable getter = rolling || _rollIframe > 0 || rocketTimer...)
-        p._rollIframe = 3.0;
-
-        // 4. Show “EXTRA LIFE!” HUD popup
-        if (g.hud && typeof g.hud.popup === 'function') {
-          g.hud.popup('❤️ Extra Life!', 0, 'cyan');
+        // 2. Hide Game Over screen and restore HUD
+        if (g.hud) {
+          if (typeof g.hud.hideGameOver === 'function') g.hud.hideGameOver();
+          if (typeof g.hud.showRun === 'function') g.hud.showRun();
+          if (typeof g.hud.showPause === 'function') g.hud.showPause(false);
+          if (g.hud.over) g.hud.over.classList.add('hidden');
         }
 
-        // 5. Resume ambient / run music
+        // 3. Restore camera mode to playing
+        if (g.chase && typeof g.chase.setMode === 'function') {
+          g.chase.setMode('play');
+        }
+
+        // 4. Restore player alive flag and upright position
+        p.alive = true;
+        p.grounded = true;
+        if (p.velocity && typeof p.velocity.set === 'function') {
+          p.velocity.set(0, 0, 0);
+        }
+        if (p.rotation && typeof p.rotation.set === 'function') {
+          p.rotation.set(0, 0, 0);
+        }
+        if (p.mesh && p.mesh.rotation && typeof p.mesh.rotation.set === 'function') {
+          p.mesh.rotation.set(0, 0, 0);
+        }
+        if (p.position && p.position.y < 0.2) {
+          p.position.y = 0.5;
+        }
+        if (typeof p.recoverFromCrash === 'function') {
+          p.recoverFromCrash();
+        }
+
+        // 5. Grant 3.5s invulnerability via _rollIframe
+        //    (invulnerable getter = rolling || _rollIframe > 0 || rocketTimer...)
+        p._rollIframe = 3.5;
+
+        // 6. Show “RESPAWNED!” HUD popup
+        if (g.hud && typeof g.hud.popup === 'function') {
+          g.hud.popup('❤️ RESPAWNED!', 0, 'cyan');
+        }
+
+        // 7. Resume ambient / run music
         if (g.audio && typeof g.audio.music === 'function') {
           g.audio.music('run');
         }
 
-        console.log('[AdManager] Extra life granted — mode restored to playing.');
+        console.log('[AdManager] Extra life granted — game over hidden, mode restored to playing.');
       } catch (err) {
         console.warn('[AdManager] Extra life grant failed:', err);
       }
     });
 
     _initBillboards();
-    _initRoadsideBillboard(g);
+    _initSideAd(g);
     console.log('[AdManager] Ready.');
   }
 
   /* ─────────────────────────────────────────────────────────────────────
-   * 3. ROADSIDE BILLBOARD OVERLAY (Adsterra 300×250 Banner)
+   * 3. LEFT SIDE AD PANEL (Adsterra 300×250 Banner)
    * ───────────────────────────────────────────────────────────────────── */
-  function _initRoadsideBillboard(g) {
-    var panel = document.getElementById('lsr-roadside-billboard');
-    var closeBtn = document.getElementById('lsr-billboard-close-btn');
+  function _initSideAd(g) {
+    var panel = document.getElementById('lsr-side-ad');
+    var closeBtn = document.getElementById('lsr-side-ad-close-btn');
     if (!panel) return;
 
     var _driveSec = 0;
     var _bbVisible = false;
     var _autoHideTimer = null;
 
-    function _showBillboard() {
+    function _showSideAd() {
       if (_bbVisible) return;
       if (!g || g.mode !== 'playing' || g.paused) return;
       _bbVisible = true;
       panel.classList.add('visible');
-      console.log('[AdManager] Roadside billboard displayed.');
+      console.log('[AdManager] Left side ad displayed.');
 
       if (_autoHideTimer) clearTimeout(_autoHideTimer);
       // Stays visible for 18 seconds (full CPM impression captured)
       _autoHideTimer = setTimeout(function () {
-        _hideBillboard();
+        _hideSideAd();
         _driveSec = -60; // Show again after another 60s of driving
       }, 18000);
     }
 
-    function _hideBillboard() {
+    function _hideSideAd() {
       if (!_bbVisible) return;
       _bbVisible = false;
       panel.classList.remove('visible');
       if (_autoHideTimer) clearTimeout(_autoHideTimer);
-      console.log('[AdManager] Roadside billboard retracted.');
+      console.log('[AdManager] Left side ad retracted.');
     }
 
-    // Dismiss button on billboard frame
+    // Dismiss button on ad frame
     if (closeBtn) {
       closeBtn.addEventListener('click', function (e) {
         e.stopPropagation();
-        _hideBillboard();
+        _hideSideAd();
         _driveSec = -90; // dismissed: wait 90s before next show
       });
     }
@@ -335,7 +364,7 @@
 
       // If player paused, crashed, or in menu: hide immediately
       if (g.mode !== 'playing' || g.paused) {
-        if (_bbVisible) _hideBillboard();
+        if (_bbVisible) _hideSideAd();
         return;
       }
 
@@ -344,15 +373,15 @@
 
       // Show after 10 seconds of active driving
       if (!_bbVisible && _driveSec >= 10) {
-        _showBillboard();
+        _showSideAd();
       }
     }, 250);
 
     // Global test helpers for instant console verification
-    window.__showLsrBillboard = _showBillboard;
-    window.__hideLsrBillboard = _hideBillboard;
+    window.__showLsrSideAd = _showSideAd;
+    window.__hideLsrSideAd = _hideSideAd;
 
-    console.log('[AdManager] Roadside billboard monitoring active driving time.');
+    console.log('[AdManager] Left side ad monitoring active driving time.');
   }
 
   if (document.readyState === 'loading') {
