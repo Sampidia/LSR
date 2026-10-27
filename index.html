@@ -50,7 +50,7 @@
       Switching to src/main.tsx loads a raw dev version of the game.
       ════════════════════════════════════════════════════════════════
     -->
-    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=ads4"></script>
+    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=ads5"></script>
 
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
@@ -423,6 +423,7 @@
           }
 
           video.addEventListener('ended', completeTransition, { once: true });
+          setTimeout(completeTransition, 7500);
           meterAnimFrame = requestAnimationFrame(syncMeterWithVideo);
         }
 
