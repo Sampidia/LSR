@@ -57,20 +57,6 @@
   var _gameOverCount = 0;
   var INTERSTITIAL_EVERY = 3;
 
-  // Inject the Monetag onclick script dynamically (on user tap, not at page load)
-  // Dynamically injected on user tap — onclick fires because the tap IS the click.
-  var _monetagInjected = false;
-  function _injectMonetag() {
-    if (_monetagInjected) return;
-    _monetagInjected = true;
-    // Exact Monetag onclick snippet (zone 12129897)
-    (function(s) {
-      s.dataset.zone = '12129897';
-      s.src = 'https://al5sm.com/tag.min.js';
-    })([document.documentElement, document.body].filter(Boolean).pop()
-        .appendChild(document.createElement('script')));
-  }
-
   function onGameOver() {
     _gameOverCount++;
     if (_gameOverCount % INTERSTITIAL_EVERY === 0) {
@@ -89,10 +75,10 @@
     el.style.cssText = [
       'position:fixed;inset:0;z-index:99999',
       'display:flex;flex-direction:column;align-items:center;justify-content:center',
-      'background:rgba(0,0,0,0.82)',
-      'backdrop-filter:blur(8px)',
-      '-webkit-backdrop-filter:blur(8px)',
-      'font-family:"Nunito","Helvetica Neue",Arial,sans-serif',
+      'background:rgba(0,0,0,0.85)',
+      'backdrop-filter:blur(10px)',
+      '-webkit-backdrop-filter:blur(10px)',
+      'font-family:"Outfit","Inter",sans-serif',
       'color:#fff',
       'text-align:center',
       'padding:24px',
@@ -100,39 +86,37 @@
 
     el.innerHTML =
       '<div style="font-size:52px;margin-bottom:12px">❤️</div>' +
-      '<h2 style="margin:0 0 8px;font-size:22px;font-weight:800;' +
-             'background:linear-gradient(135deg,#f59e0b,#ef4444);' +
+      '<h2 style="margin:0 0 8px;font-size:24px;font-weight:800;' +
+             'background:linear-gradient(135deg,#00f0ff,#f5c518);' +
              '-webkit-background-clip:text;-webkit-text-fill-color:transparent">' +
-        'Get an Extra Life!' +
+        'Second Chance!' +
       '</h2>' +
-      '<p style="margin:0 0 28px;font-size:14px;color:rgba(255,255,255,0.72);max-width:280px">' +
-        'Watch a quick ad and jump straight back in with a free life.' +
+      '<p style="margin:0 0 28px;font-size:14px;color:rgba(255,255,255,0.78);max-width:300px;line-height:1.5">' +
+        'Claim a free extra life and jump straight back into the race!' +
       '</p>' +
       '<button id="lsr-watch-ad-btn" style="' +
-        'background:linear-gradient(135deg,#f59e0b,#f97316);' +
-        'border:none;border-radius:9999px;color:#fff;' +
-        'font-size:15px;font-weight:700;letter-spacing:.05em;' +
+        'background:linear-gradient(135deg,#00f0ff,#0090ff);' +
+        'border:none;border-radius:9999px;color:#000;' +
+        'font-size:15px;font-weight:800;letter-spacing:.05em;' +
         'padding:14px 36px;cursor:pointer;' +
-        'box-shadow:0 8px 24px rgba(249,115,22,.45);' +
+        'box-shadow:0 8px 24px rgba(0,240,255,.45);' +
         'transition:transform .15s,box-shadow .15s' +
       '">' +
-        '▶ Watch Ad' +
+        '❤️ Claim Extra Life' +
       '</button>' +
       '<button id="lsr-skip-ad-btn" style="' +
         'background:none;border:none;margin-top:16px;' +
-        'color:rgba(255,255,255,0.45);font-size:12px;cursor:pointer;' +
+        'color:rgba(255,255,255,0.45);font-size:13px;cursor:pointer;' +
         'font-family:inherit;text-decoration:underline' +
-      '">No thanks, skip</button>';
+      '">No thanks, end run</button>';
 
     document.body.appendChild(el);
     _overlayEl = el;
 
-    // Watch Ad button
+    // Claim button: Grants extra life directly without injecting click interceptors
     el.querySelector('#lsr-watch-ad-btn').addEventListener('click', function () {
       _overlayEl.style.display = 'none';
-      _injectMonetag();            // inject + fire onclick ad in new tab
-      // Grant extra life after delay (onclick has no completion callback)
-      setTimeout(_grantExtraLife, CFG.rewardDelayMs);
+      _grantExtraLife();
     });
 
     // Skip button
@@ -304,126 +288,71 @@
   /* ─────────────────────────────────────────────────────────────────────
    * 3. ROADSIDE BILLBOARD OVERLAY (Adsterra 300×250 Banner)
    * ───────────────────────────────────────────────────────────────────── */
-  var _bbTimer = null;
-  var _bbVisible = false;
-
-  function _renderBillboardContent(slot) {
-    var cfg = CFG.roadsideBillboard;
-    if (cfg && cfg.adsterraKey && cfg.adsterraScriptUrl) {
-      // Inject Adsterra iframe banner
-      var iframe = document.createElement('iframe');
-      iframe.style.width = '300px';
-      iframe.style.height = '250px';
-      iframe.style.border = 'none';
-      iframe.style.overflow = 'hidden';
-      iframe.scrolling = 'no';
-      slot.innerHTML = '';
-      slot.appendChild(iframe);
-
-      var bannerHtml = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-        '<style>html,body{margin:0;padding:0;width:300px;height:250px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;}</style></head><body>' +
-        '<script type="text/javascript">' +
-        'atOptions = {' +
-        "  'key' : '" + cfg.adsterraKey + "'," +
-        "  'format' : 'iframe'," +
-        "  'height' : 250," +
-        "  'width' : 300," +
-        "  'params' : {}" +
-        '};' +
-        '<\/script>' +
-        '<script type="text/javascript" src="' + cfg.adsterraScriptUrl + '"><\/script>' +
-        '</body></html>';
-
-      if ('srcdoc' in iframe) {
-        iframe.srcdoc = bannerHtml;
-      } else {
-        try {
-          var doc = iframe.contentWindow || iframe.contentDocument;
-          if (doc.document) doc = doc.document;
-          doc.open();
-          doc.write(bannerHtml);
-          doc.close();
-        } catch (e) {
-          console.warn('[AdManager] Billboard iframe render error:', e);
-        }
-      }
-    } else {
-      // Sleek placeholder / preview while awaiting zone key
-      slot.innerHTML = [
-        '<div class="lsr-billboard-placeholder">',
-        '  <div class="lsr-billboard-placeholder-icon">⚡</div>',
-        '  <div class="lsr-billboard-placeholder-title">ADSTERRA 300×250 BANNER</div>',
-        '  <div class="lsr-billboard-placeholder-desc">',
-        '    Roadside billboard frame active.<br>',
-        '    Add your Adsterra zone key to <code>ad-manager.js</code> to go live.',
-        '  </div>',
-        '</div>'
-      ].join('');
-    }
-  }
-
   function _initRoadsideBillboard(g) {
     var panel = document.getElementById('lsr-roadside-billboard');
-    var slot  = document.getElementById('lsr-billboard-slot');
     var closeBtn = document.getElementById('lsr-billboard-close-btn');
-    if (!panel || !slot) return;
+    if (!panel) return;
 
-    var cfg = CFG.roadsideBillboard;
-    if (!cfg) return;
-
-    // Render ad content into slot
-    _renderBillboardContent(slot);
+    var _driveSec = 0;
+    var _bbVisible = false;
+    var _autoHideTimer = null;
 
     function _showBillboard() {
       if (_bbVisible) return;
-      // Only show if player is actively driving
-      if (!g || g.mode !== 'playing') return;
+      if (!g || g.mode !== 'playing' || g.paused) return;
       _bbVisible = true;
       panel.classList.add('visible');
+      console.log('[AdManager] Roadside billboard displayed.');
 
-      // Auto-hide after showDurationSec to conclude impression cleanly
-      if (_bbTimer) clearTimeout(_bbTimer);
-      _bbTimer = setTimeout(function () {
+      if (_autoHideTimer) clearTimeout(_autoHideTimer);
+      // Stays visible for 18 seconds (full CPM impression captured)
+      _autoHideTimer = setTimeout(function () {
         _hideBillboard();
-        _scheduleBillboardShow(cfg.repeatIntervalSec * 1000);
-      }, cfg.showDurationSec * 1000);
+        _driveSec = -60; // Show again after another 60s of driving
+      }, 18000);
     }
 
     function _hideBillboard() {
       if (!_bbVisible) return;
       _bbVisible = false;
       panel.classList.remove('visible');
-      if (_bbTimer) clearTimeout(_bbTimer);
+      if (_autoHideTimer) clearTimeout(_autoHideTimer);
+      console.log('[AdManager] Roadside billboard retracted.');
     }
 
-    function _scheduleBillboardShow(delayMs) {
-      if (_bbTimer) clearTimeout(_bbTimer);
-      _bbTimer = setTimeout(function () {
-        _showBillboard();
-      }, delayMs);
-    }
-
-    // Close button dismisses panel early
+    // Dismiss button on billboard frame
     if (closeBtn) {
       closeBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         _hideBillboard();
-        _scheduleBillboardShow(cfg.repeatIntervalSec * 1000);
+        _driveSec = -90; // dismissed: wait 90s before next show
       });
     }
 
-    // Monitor engine mode changes:
-    // If player crashes or hits game over, slide billboard away immediately
+    // Monitor driving state every 250ms
     setInterval(function () {
       if (!g) return;
-      if (g.mode !== 'playing' && _bbVisible) {
-        _hideBillboard();
+
+      // If player paused, crashed, or in menu: hide immediately
+      if (g.mode !== 'playing' || g.paused) {
+        if (_bbVisible) _hideBillboard();
+        return;
+      }
+
+      // Actively racing on Third Mainland Bridge!
+      _driveSec += 0.25;
+
+      // Show after 10 seconds of active driving
+      if (!_bbVisible && _driveSec >= 10) {
+        _showBillboard();
       }
     }, 250);
 
-    // Initial schedule: slide in after firstShowSec
-    _scheduleBillboardShow(cfg.firstShowSec * 1000);
-    console.log('[AdManager] Roadside billboard scheduled (first show in ' + cfg.firstShowSec + 's).');
+    // Global test helpers for instant console verification
+    window.__showLsrBillboard = _showBillboard;
+    window.__hideLsrBillboard = _hideBillboard;
+
+    console.log('[AdManager] Roadside billboard monitoring active driving time.');
   }
 
   if (document.readyState === 'loading') {

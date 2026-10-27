@@ -50,12 +50,7 @@
       Switching to src/main.tsx loads a raw dev version of the game.
       ════════════════════════════════════════════════════════════════
     -->
-    <!-- ── Monetag In-Page Push (zone 12129837) ──────────────────────────────
-         Fires an in-page push notification impression at session start.
-    ─────────────────────────────────────────────────────────────────────── -->
-    <script>(function(s){s.dataset.zone='12129837',s.src='https://nap5k.com/tag.min.js'})([document.documentElement,document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
-
-    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=ads2"></script>
+    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=ads3"></script>
 
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
@@ -564,7 +559,7 @@
     </script>
 
     <!-- ── Ad Manager ── -->
-    <script src="/assets/ad-manager.js?v=bb2"></script>
+    <script src="/assets/ad-manager.js?v=bb3"></script>
 
     <!-- ── Roadside Billboard Overlay (Adsterra 300×250 Banner) ────────── -->
     <div id="lsr-roadside-billboard" aria-label="Roadside Billboard Ad">
@@ -574,17 +569,20 @@
           <button type="button" class="lsr-billboard-close" id="lsr-billboard-close-btn" title="Dismiss" aria-label="Close">✕</button>
         </div>
         <div class="lsr-billboard-slot" id="lsr-billboard-slot">
-          <!-- Injected dynamically by ad-manager.js -->
+          <script type="text/javascript">
+            atOptions = {
+              'key' : 'd63c5535d695dc8fc37ba5d09d406934',
+              'format' : 'iframe',
+              'height' : 250,
+              'width' : 300,
+              'params' : {}
+            };
+          </script>
+          <script type="text/javascript" src="https://bauval.org/22/d63c5535d695dc8fc37ba5d09d406934"></script>
         </div>
       </div>
       <div class="lsr-billboard-pole"></div>
     </div>
-
-    <!-- ── Adsterra Social Bar (bauval.org) ───────────────────────────────────
-         Self-positioning floating widget — CPM on impression.
-         pointer-events:none on wrapper prevents swallowing game input.
-    ─────────────────────────────────────────────────────────────────────── -->
-    <script data-cfasync="false" src="https://bauval.org/14/b81774a4b961b1fd12fb56c0638e7784"></script>
 
   </body>
 </html>
