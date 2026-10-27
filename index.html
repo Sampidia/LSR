@@ -50,12 +50,18 @@
       Switching to src/main.tsx loads a raw dev version of the game.
       ════════════════════════════════════════════════════════════════
     -->
-    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=vechiledaynight23"></script>
+    <!-- ── Monetag In-Page Push (zone 12129837) ──────────────────────────────
+         Fires an in-page push notification impression at session start.
+    ─────────────────────────────────────────────────────────────────────── -->
+    <script>(function(s){s.dataset.zone='12129837',s.src='https://nap5k.com/tag.min.js'})([document.documentElement,document.body].filter(Boolean).pop().appendChild(document.createElement('script')))</script>
+
+    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=ads2"></script>
 
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
     <link rel="stylesheet" href="/assets/controls.css?v=ctrl3">
     <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud6">
+    <link rel="stylesheet" href="/assets/roadside-billboard.css?v=bb1">
     <style>
       #boot {
         position: fixed;
@@ -534,5 +540,51 @@
       setTimeout(tryPatch, 500);
     })();
     </script>
+
+    <!-- ── Expose boardMats for ad-manager.js ───────────────────────────────
+         Waits for window.__GAME__.game.world to be ready, then publishes
+         world.boardMats on window.__lsrWorld so ad-manager.js can swap
+         billboard textures without touching the engine bundle.
+    ─────────────────────────────────────────────────────────────────────── -->
+    <script>
+    (function exposeWorldForAds() {
+      var _attempts = 0;
+      function tryExpose() {
+        var g = window.__GAME__ && window.__GAME__.game;
+        var world = g && g.world;
+        if (world && world.boardMats && world.boardMats.length) {
+          window.__lsrWorld = { boardMats: world.boardMats };
+          console.log('[LSR Ads] __lsrWorld exposed — ' + world.boardMats.length + ' billboard mats.');
+          return;
+        }
+        if (++_attempts < 300) setTimeout(tryExpose, 100);
+      }
+      setTimeout(tryExpose, 800);
+    })();
+    </script>
+
+    <!-- ── Ad Manager ── -->
+    <script src="/assets/ad-manager.js?v=bb2"></script>
+
+    <!-- ── Roadside Billboard Overlay (Adsterra 300×250 Banner) ────────── -->
+    <div id="lsr-roadside-billboard" aria-label="Roadside Billboard Ad">
+      <div class="lsr-billboard-frame">
+        <div class="lsr-billboard-header">
+          <div class="lsr-billboard-tag">Lagos Highway Ads</div>
+          <button type="button" class="lsr-billboard-close" id="lsr-billboard-close-btn" title="Dismiss" aria-label="Close">✕</button>
+        </div>
+        <div class="lsr-billboard-slot" id="lsr-billboard-slot">
+          <!-- Injected dynamically by ad-manager.js -->
+        </div>
+      </div>
+      <div class="lsr-billboard-pole"></div>
+    </div>
+
+    <!-- ── Adsterra Social Bar (bauval.org) ───────────────────────────────────
+         Self-positioning floating widget — CPM on impression.
+         pointer-events:none on wrapper prevents swallowing game input.
+    ─────────────────────────────────────────────────────────────────────── -->
+    <script data-cfasync="false" src="https://bauval.org/14/b81774a4b961b1fd12fb56c0638e7784"></script>
+
   </body>
 </html>

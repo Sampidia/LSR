@@ -1,0 +1,183 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   LAGOS STREET RACE — ROADSIDE BILLBOARD OVERLAY (ADSTERRA 300×250)
+   Simulates an authentic roadside highway billboard panel sliding into view
+   ═══════════════════════════════════════════════════════════════════════ */
+
+#lsr-roadside-billboard {
+  position: fixed;
+  right: -360px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  transition: right 0.7s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+  user-select: none;
+}
+
+#lsr-roadside-billboard.visible {
+  right: 18px;
+}
+
+/* ── Billboard Sign Frame ───────────────────────────────────────────── */
+.lsr-billboard-frame {
+  pointer-events: auto;
+  width: 316px;
+  background: linear-gradient(180deg, #1b212c 0%, #0c1017 100%);
+  border: 2px solid rgba(0, 240, 255, 0.35);
+  border-radius: 8px;
+  box-shadow: 
+    0 16px 42px rgba(0, 0, 0, 0.85),
+    0 0 25px rgba(0, 240, 255, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Top floodlights / header bar ──────────────────────────────────── */
+.lsr-billboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(0, 240, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: #00f0ff;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.lsr-billboard-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lsr-billboard-tag::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00f0ff;
+  box-shadow: 0 0 8px #00f0ff;
+  animation: lsr-pulse 2s infinite ease-in-out;
+}
+
+@keyframes lsr-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.lsr-billboard-close {
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.lsr-billboard-close:hover {
+  background: rgba(255, 42, 68, 0.7);
+  transform: scale(1.1);
+}
+
+/* ── Ad Creative Area (300×250) ─────────────────────────────────────── */
+.lsr-billboard-slot {
+  width: 300px;
+  height: 250px;
+  margin: 6px auto;
+  position: relative;
+  background: #04070d;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lsr-billboard-slot iframe {
+  width: 300px !important;
+  height: 250px !important;
+  border: none !important;
+  display: block;
+}
+
+/* Fallback / placeholder inside billboard when awaiting zone key */
+.lsr-billboard-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px;
+  color: #9ab;
+  font-family: 'Outfit', 'Inter', sans-serif;
+}
+
+.lsr-billboard-placeholder-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.5));
+}
+
+.lsr-billboard-placeholder-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #00f0ff;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.lsr-billboard-placeholder-desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
+}
+
+/* ── Highway Pole / Truss Structure ────────────────────────────────── */
+.lsr-billboard-pole {
+  width: 16px;
+  height: 80px;
+  background: repeating-linear-gradient(
+    135deg,
+    #2a303c,
+    #2a303c 4px,
+    #181c24 4px,
+    #181c24 10px
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 
+    3px 0 10px rgba(0, 0, 0, 0.7),
+    inset 1px 0 2px rgba(255, 255, 255, 0.15);
+  border-radius: 0 0 4px 4px;
+}
+
+/* ── Mobile and Responsive Adaptations ─────────────────────────────── */
+@media (max-width: 768px) {
+  #lsr-roadside-billboard {
+    transform: translateY(-50%) scale(0.88);
+    transform-origin: right center;
+  }
+}
+
+@media (max-width: 480px) {
+  #lsr-roadside-billboard {
+    transform: translateY(-50%) scale(0.78);
+    transform-origin: right center;
+  }
+}
