@@ -64,8 +64,9 @@
     }
   }
 
-  /* ── Rewarded overlay ────────────────────────────────────────────────── */
+  /* ── Rewarded overlay (Option 1: 5s Sponsor Banner) ─────────────────── */
   var _overlayEl = null;
+  var _rewardCountdownTimer = null;
 
   function _buildOverlay() {
     if (_overlayEl) return _overlayEl;
@@ -74,53 +75,78 @@
     el.id = 'lsr-reward-overlay';
     el.style.cssText = [
       'position:fixed;inset:0;z-index:99999',
-      'display:flex;flex-direction:column;align-items:center;justify-content:center',
-      'background:rgba(0,0,0,0.85)',
-      'backdrop-filter:blur(10px)',
-      '-webkit-backdrop-filter:blur(10px)',
-      'font-family:"Outfit","Inter",sans-serif',
+      'display:none;flex-direction:column;align-items:center;justify-content:center',
+      'background:rgba(4,7,14,0.88)',
+      'backdrop-filter:blur(12px)',
+      '-webkit-backdrop-filter:blur(12px)',
+      'font-family:"Outfit","Inter",-apple-system,sans-serif',
       'color:#fff',
       'text-align:center',
-      'padding:24px',
+      'padding:16px',
+      'user-select:none',
     ].join(';');
 
-    el.innerHTML =
-      '<div style="font-size:52px;margin-bottom:12px">❤️</div>' +
-      '<h2 style="margin:0 0 8px;font-size:24px;font-weight:800;' +
-             'background:linear-gradient(135deg,#00f0ff,#f5c518);' +
-             '-webkit-background-clip:text;-webkit-text-fill-color:transparent">' +
-        'Second Chance!' +
-      '</h2>' +
-      '<p style="margin:0 0 28px;font-size:14px;color:rgba(255,255,255,0.78);max-width:300px;line-height:1.5">' +
-        'Claim a free extra life and jump straight back into the race!' +
-      '</p>' +
-      '<button id="lsr-watch-ad-btn" style="' +
-        'background:linear-gradient(135deg,#00f0ff,#0090ff);' +
-        'border:none;border-radius:9999px;color:#000;' +
-        'font-size:15px;font-weight:800;letter-spacing:.05em;' +
-        'padding:14px 36px;cursor:pointer;' +
-        'box-shadow:0 8px 24px rgba(0,240,255,.45);' +
-        'transition:transform .15s,box-shadow .15s' +
-      '">' +
-        '❤️ Claim Extra Life' +
-      '</button>' +
-      '<button id="lsr-skip-ad-btn" style="' +
-        'background:none;border:none;margin-top:16px;' +
-        'color:rgba(255,255,255,0.45);font-size:13px;cursor:pointer;' +
-        'font-family:inherit;text-decoration:underline' +
-      '">No thanks, end run</button>';
+    el.innerHTML = [
+      '<div style="',
+      '  background: linear-gradient(180deg, #161c28 0%, #0d121c 100%);',
+      '  border: 1.5px solid rgba(0, 240, 255, 0.4);',
+      '  border-radius: 12px;',
+      '  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 30px rgba(0,240,255,0.2);',
+      '  padding: 18px 20px 16px;',
+      '  width: 326px;',
+      '  max-width: 95vw;',
+      '  display: flex;',
+      '  flex-direction: column;',
+      '  align-items: center;',
+      '  box-sizing: border-box;',
+      '">',
+      '  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">',
+      '    <span style="font-size:22px">❤️</span>',
+      '    <h2 style="margin:0;font-size:20px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#00f0ff,#f5c518);-webkit-background-clip:text;-webkit-text-fill-color:transparent">SECOND CHANCE!</h2>',
+      '  </div>',
+      '  <p style="margin:0 0 10px;font-size:12px;color:rgba(255,255,255,0.72);line-height:1.4">Watch sponsor ad to continue your race</p>',
+      '  <!-- Adsterra 300x250 Banner Slot -->',
+      '  <div id="lsr-reward-ad-slot" style="width:300px;height:250px;background:#000;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:12px"></div>',
+      '  <!-- 5-Second Countdown Bar -->',
+      '  <div style="width:100%;background:rgba(255,255,255,0.08);border-radius:6px;height:6px;overflow:hidden;margin-bottom:8px">',
+      '    <div id="lsr-reward-progress" style="width:0%;height:100%;background:linear-gradient(90deg,#00f0ff,#f5c518);transition:width 0.25s linear"></div>',
+      '  </div>',
+      '  <div id="lsr-reward-timer-text" style="font-size:12px;font-weight:700;color:#00f0ff;letter-spacing:0.5px;margin-bottom:10px">Sponsor Ad: Reviving in 5s...</div>',
+      '  <!-- Continue Button -->',
+      '  <button id="lsr-reward-claim-btn" disabled style="',
+      '    width: 100%;',
+      '    background: rgba(255,255,255,0.12);',
+      '    border: none;',
+      '    border-radius: 8px;',
+      '    color: rgba(255,255,255,0.45);',
+      '    font-size: 14px;',
+      '    font-weight: 800;',
+      '    letter-spacing: 0.05em;',
+      '    padding: 12px 20px;',
+      '    cursor: not-allowed;',
+      '    transition: all 0.25s ease;',
+      '    font-family: inherit;',
+      '  ">⏳ Watching sponsor ad (5s)...</button>',
+      '  <!-- Skip Option -->',
+      '  <button id="lsr-reward-skip-btn" style="background:none;border:none;margin-top:10px;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">No thanks, end run</button>',
+      '</div>'
+    ].join('');
 
     document.body.appendChild(el);
     _overlayEl = el;
 
-    // Claim button: Grants extra life directly without injecting click interceptors
-    el.querySelector('#lsr-watch-ad-btn').addEventListener('click', function () {
+    // Claim button
+    var claimBtn = el.querySelector('#lsr-reward-claim-btn');
+    claimBtn.addEventListener('click', function () {
+      if (claimBtn.disabled) return;
+      if (_rewardCountdownTimer) clearInterval(_rewardCountdownTimer);
       _overlayEl.style.display = 'none';
       _grantExtraLife();
     });
 
     // Skip button
-    el.querySelector('#lsr-skip-ad-btn').addEventListener('click', function () {
+    el.querySelector('#lsr-reward-skip-btn').addEventListener('click', function () {
+      if (_rewardCountdownTimer) clearInterval(_rewardCountdownTimer);
       _overlayEl.style.display = 'none';
     });
 
@@ -130,7 +156,99 @@
   function _showRewardedOverlay() {
     var overlay = _buildOverlay();
     overlay.style.display = 'flex';
+
+    var slot = overlay.querySelector('#lsr-reward-ad-slot');
+    var bar = overlay.querySelector('#lsr-reward-progress');
+    var timerText = overlay.querySelector('#lsr-reward-timer-text');
+    var claimBtn = overlay.querySelector('#lsr-reward-claim-btn');
+
+    // Reset UI state
+    bar.style.width = '0%';
+    claimBtn.disabled = true;
+    claimBtn.style.background = 'rgba(255,255,255,0.12)';
+    claimBtn.style.color = 'rgba(255,255,255,0.45)';
+    claimBtn.style.boxShadow = 'none';
+    claimBtn.style.cursor = 'not-allowed';
+    claimBtn.textContent = '⏳ Watching sponsor ad (5s)...';
+    timerText.textContent = 'Sponsor Ad: Reviving in 5s...';
+
+    // Inject Adsterra 300x250 banner into slot
+    slot.innerHTML = '';
+    var iframe = document.createElement('iframe');
+    iframe.style.width = '300px';
+    iframe.style.height = '250px';
+    iframe.style.border = 'none';
+    iframe.style.overflow = 'hidden';
+    iframe.scrolling = 'no';
+    slot.appendChild(iframe);
+
+    var bannerHtml = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+      '<style>html,body{margin:0;padding:0;width:300px;height:250px;overflow:hidden;background:#000;display:flex;align-items:center;justify-content:center;}</style></head><body>' +
+      '<script type="text/javascript">' +
+      'atOptions = {' +
+      "  'key' : 'd63c5535d695dc8fc37ba5d09d406934'," +
+      "  'format' : 'iframe'," +
+      "  'height' : 250," +
+      "  'width' : 300," +
+      "  'params' : {}" +
+      '};' +
+      '<\/script>' +
+      '<script type="text/javascript" src="https://bauval.org/22/d63c5535d695dc8fc37ba5d09d406934"><\/script>' +
+      '</body></html>';
+
+    if ('srcdoc' in iframe) {
+      iframe.srcdoc = bannerHtml;
+    } else {
+      try {
+        var doc = iframe.contentWindow || iframe.contentDocument;
+        if (doc.document) doc = doc.document;
+        doc.open();
+        doc.write(bannerHtml);
+        doc.close();
+      } catch (e) {
+        console.warn('[AdManager] Reward ad iframe error:', e);
+      }
+    }
+
+    // 5-second countdown timer
+    if (_rewardCountdownTimer) clearInterval(_rewardCountdownTimer);
+    var remaining = 5;
+    var totalTime = 5;
+
+    _rewardCountdownTimer = setInterval(function () {
+      remaining -= 0.5;
+      var pct = Math.min(100, Math.round(((totalTime - remaining) / totalTime) * 100));
+      bar.style.width = pct + '%';
+
+      if (remaining > 0) {
+        timerText.textContent = 'Sponsor Ad: Reviving in ' + Math.ceil(remaining) + 's...';
+        claimBtn.textContent = '⏳ Watching sponsor ad (' + Math.ceil(remaining) + 's)...';
+      } else {
+        clearInterval(_rewardCountdownTimer);
+        _rewardCountdownTimer = null;
+        bar.style.width = '100%';
+        timerText.textContent = '❤️ SPONSOR REWARD READY!';
+
+        claimBtn.disabled = false;
+        claimBtn.style.background = 'linear-gradient(135deg, #00f0ff, #0090ff)';
+        claimBtn.style.color = '#000';
+        claimBtn.style.boxShadow = '0 8px 24px rgba(0, 240, 255, 0.45)';
+        claimBtn.style.cursor = 'pointer';
+        claimBtn.textContent = '❤️ RESUME RACE NOW';
+
+        // Auto-resume after 1.2s if player doesn't tap
+        setTimeout(function () {
+          if (overlay.style.display !== 'none') {
+            overlay.style.display = 'none';
+            _grantExtraLife();
+          }
+        }, 1200);
+      }
+    }, 500);
   }
+
+  // Global test helper
+  window.__showRewardedLifeAd = _showRewardedOverlay;
 
   function _grantExtraLife() {
     window.dispatchEvent(new CustomEvent('ad:reward', {
@@ -322,6 +440,9 @@
     var closeBtn = document.getElementById('lsr-side-ad-close-btn');
     if (!panel) return;
 
+    var DISPLAY_DURATION_SEC = 10; // 10s view time (IAB/MRC standard: 100% valid impression, peak CPM)
+    var COOLDOWN_SEC         = 60; // 60s active driving interval between impressions
+
     var _driveSec = 0;
     var _bbVisible = false;
     var _autoHideTimer = null;
@@ -331,30 +452,33 @@
       if (!g || g.mode !== 'playing' || g.paused) return;
       _bbVisible = true;
       panel.classList.add('visible');
-      console.log('[AdManager] Left side ad displayed.');
+      console.log('[AdManager] Left side ad displayed (auto-hiding in ' + DISPLAY_DURATION_SEC + 's).');
 
       if (_autoHideTimer) clearTimeout(_autoHideTimer);
-      // Stays visible for 18 seconds (full CPM impression captured)
+      // Automatically slide out without requiring any user click
       _autoHideTimer = setTimeout(function () {
         _hideSideAd();
-        _driveSec = -60; // Show again after another 60s of driving
-      }, 18000);
+      }, DISPLAY_DURATION_SEC * 1000);
     }
 
     function _hideSideAd() {
       if (!_bbVisible) return;
       _bbVisible = false;
       panel.classList.remove('visible');
-      if (_autoHideTimer) clearTimeout(_autoHideTimer);
-      console.log('[AdManager] Left side ad retracted.');
+      if (_autoHideTimer) {
+        clearTimeout(_autoHideTimer);
+        _autoHideTimer = null;
+      }
+      // Reset driving accumulator to negative cooldown so it waits 60s before reappearing
+      _driveSec = -COOLDOWN_SEC;
+      console.log('[AdManager] Left side ad automatically retracted. Next show in ' + COOLDOWN_SEC + 's.');
     }
 
-    // Dismiss button on ad frame
+    // Dismiss button on ad frame (if user wants to dismiss early)
     if (closeBtn) {
       closeBtn.addEventListener('click', function (e) {
         e.stopPropagation();
         _hideSideAd();
-        _driveSec = -90; // dismissed: wait 90s before next show
       });
     }
 
@@ -371,7 +495,7 @@
       // Actively racing on Third Mainland Bridge!
       _driveSec += 0.25;
 
-      // Show after 10 seconds of active driving
+      // Show after initial 10 seconds of active driving
       if (!_bbVisible && _driveSec >= 10) {
         _showSideAd();
       }
