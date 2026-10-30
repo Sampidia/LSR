@@ -15,23 +15,23 @@ import { CSS3DRenderer, CSS3DObject } from './vendor/CSS3DRenderer.js';
 
   // Adsterra Active Production Zones
   var ZONES = {
-    // 300x250 Medium Rectangle (High CPM, large gantry face)
+    // 300x250 Medium Rectangle (High CPM, fits 14m × 7m billboard face with 1:1 pixel aspect)
     '300x250': {
       key: 'd63c5535d695dc8fc37ba5d09d406934',
       scriptUrl: 'https://bauval.org/22/d63c5535d695dc8fc37ba5d09d406934',
       width: 300,
       height: 250,
-      worldWidth: 10.0,
-      worldHeight: 7.2,
+      worldWidth: 8.4,
+      worldHeight: 7.0,
     },
-    // 728x90 Leaderboard (Wide horizontal panoramic gantry)
+    // 728x90 Leaderboard (Wide horizontal panoramic highway billboard)
     '728x90': {
       key: 'b9e6f3bd29d22d1fa424821a8efd89e7',
       scriptUrl: 'https://bauval.org/22/b9e6f3bd29d22d1fa424821a8efd89e7',
       width: 728,
       height: 90,
-      worldWidth: 14.2,
-      worldHeight: 3.2,
+      worldWidth: 13.6,
+      worldHeight: 2.8,
     },
     // 468x60 Full Banner (Standard highway strip)
     '468x60': {
@@ -113,15 +113,13 @@ import { CSS3DRenderer, CSS3DObject } from './vendor/CSS3DRenderer.js';
 
     cssScene = new THREE.Scene();
 
-    // 2. Pair highway billboard gantries with alternating formats:
-    // Slot 0: 300x250 Medium Rectangle
-    // Slot 1: 728x90 Panoramic Leaderboard
+    // 2. Pair highway billboards with alternating ad formats across all ring slots:
     var worldBoards = g.world.billboards;
-    var slotConfigs = [ZONES['300x250'], ZONES['728x90']];
+    var slotConfigs = [ZONES['300x250'], ZONES['728x90'], ZONES['300x250'], ZONES['728x90']];
     var count = Math.min(slotConfigs.length, worldBoards.length);
 
     for (var i = 0; i < count; i++) {
-      var zone = slotConfigs[i];
+      var zone = slotConfigs[i % slotConfigs.length];
       var adEl = createAdElement(zone);
       var cssObj = new CSS3DObject(adEl);
 
@@ -153,7 +151,7 @@ import { CSS3DRenderer, CSS3DObject } from './vendor/CSS3DRenderer.js';
 
       var playerZ = (g.player && g.player.position) ? g.player.position.z : 0;
 
-      // Synchronize 3D billboard positions with highway gantry world positions
+      // Synchronize 3D billboard positions with highway roadside billboards
       for (var j = 0; j < cssBillboards.length; j++) {
         var item = cssBillboards[j];
         var gantry = item.gantry;
@@ -167,13 +165,15 @@ import { CSS3DRenderer, CSS3DObject } from './vendor/CSS3DRenderer.js';
         if (!isVisibleOnRoad) {
           cssObj.position.set(0, 0, 1e5);
         } else {
-          var boardMesh = gantry.userData.board;
+          var boardMesh = gantry.userData && gantry.userData.board;
           if (boardMesh) {
-            boardMesh.getWorldPosition(_tmpVec);
+            // The 3D in-world billboard face has geometry centered at local (0, 14.5, -0.03).
+            // Elevate to Y = 14.5m and offset slightly forward (+0.08m in local Z) along the
+            // billboard normal so the CSS3D ad mounts cleanly on the billboard frame at the proper
+            // roadside setback distance (matching in-game billboard ads) rather than down on the road barrier / lanes.
+            _tmpVec.set(0, 14.5, 0.08);
+            boardMesh.localToWorld(_tmpVec);
             boardMesh.getWorldQuaternion(_tmpQuat);
-
-            // Offset 0.18m forward along face normal so it sits clean on the gantry face
-            _tmpVec.addScaledVector(_forwardVec.set(0, 0, 1).applyQuaternion(_tmpQuat), 0.18);
 
             cssObj.position.copy(_tmpVec);
             cssObj.quaternion.copy(_tmpQuat);
