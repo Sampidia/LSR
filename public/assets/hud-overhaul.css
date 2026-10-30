@@ -743,29 +743,93 @@
 }
 
 /* ── 6. PORTRAIT GAMEPLAY HUD ────────────────────────────────────────── */
-@media (orientation: portrait) {
+@media (orientation: portrait), (max-width: 540px) {
   /* Hide sound/mute button — audio icon clutters portrait HUD */
   #hud .mute-btn:not(.pause-btn) {
     display: none !important;
   }
 
-  /* Score card — compact */
+  /* Score card — stacked vertically in portrait to eliminate horizontal collisions with top-bar controls */
   .hud-left {
     top: calc(6px + env(safe-area-inset-top, 0px)) !important;
-    left: 6px !important;
-    max-width: calc(58vw) !important;
+    left: 8px !important;
+    width: auto !important;
+    max-width: 140px !important;
+    pointer-events: none !important;
   }
   .score-card {
-    padding: 6px 10px 8px !important;
-    border-radius: 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    padding: 6px 11px 7px !important;
+    border-radius: 12px !important;
+    width: auto !important;
+    min-width: 78px !important;
+    max-width: 135px !important;
+    grid-template-areas: none !important;
+    grid-template-columns: none !important;
+    overflow: visible !important;
+    box-sizing: border-box !important;
+  }
+  .score-head {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 1px !important;
+    gap: 6px !important;
+  }
+  .score-head .micro {
+    display: block !important;
+    font-size: 8px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.15em !important;
+    color: var(--cyber-cyan) !important;
+    opacity: 0.85 !important;
+  }
+  .mult {
+    font-size: 9px !important;
+    padding: 1px 5px !important;
   }
   .score-value {
-    font-size: 22px !important;
-    margin: 2px 0 5px !important;
+    font-size: 20px !important;
+    font-weight: 900 !important;
+    line-height: 1.0 !important;
+    margin: 1px 0 3px !important;
+    letter-spacing: -0.02em !important;
+    color: #ffffff !important;
+    font-variant-numeric: tabular-nums !important;
+    white-space: nowrap !important;
   }
   .score-sub {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
     font-size: 10px !important;
-    padding-top: 4px !important;
+    line-height: 1 !important;
+    padding-top: 3px !important;
+    margin-top: 1px !important;
+    border-top: 1px solid rgba(0, 240, 255, 0.22) !important;
+    white-space: nowrap !important;
+    width: 100% !important;
+  }
+  .score-loc-icon {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .score-sub .dist {
+    font-size: 10px !important;
+    font-weight: 700 !important;
+  }
+  .score-sub .micro {
+    font-size: 9px !important;
+  }
+  .combo-bar {
+    position: absolute !important;
+    bottom: -1px !important;
+    left: 8px !important;
+    right: 8px !important;
+    height: 2px !important;
   }
 
   /* HUD right — shift inward so gauge does not clip */

@@ -40,15 +40,6 @@
 
     // How long (ms) to wait after onclick fires before granting the extra life
     rewardDelayMs: 5000,
-
-    // Approach A: Roadside Billboard Overlay (Adsterra 300×250 Banner)
-    roadsideBillboard: {
-      adsterraKey: 'd63c5535d695dc8fc37ba5d09d406934',
-      adsterraScriptUrl: 'https://bauval.org/22/d63c5535d695dc8fc37ba5d09d406934',
-      firstShowSec: 25,         // Initial slide-in after 25s of driving
-      showDurationSec: 18,      // Visible for 18s (full CPM impression captured)
-      repeatIntervalSec: 75,    // Repeats every 75s while driving
-    },
   };
 
   /* ─────────────────────────────────────────────────────────────────────
@@ -428,84 +419,7 @@
     });
 
     _initBillboards();
-    _initSideAd(g);
     console.log('[AdManager] Ready.');
-  }
-
-  /* ─────────────────────────────────────────────────────────────────────
-   * 3. LEFT SIDE AD PANEL (Adsterra 300×250 Banner)
-   * ───────────────────────────────────────────────────────────────────── */
-  function _initSideAd(g) {
-    var panel = document.getElementById('lsr-side-ad');
-    var closeBtn = document.getElementById('lsr-side-ad-close-btn');
-    if (!panel) return;
-
-    var DISPLAY_DURATION_SEC = 10; // 10s view time (IAB/MRC standard: 100% valid impression, peak CPM)
-    var COOLDOWN_SEC         = 60; // 60s active driving interval between impressions
-
-    var _driveSec = 0;
-    var _bbVisible = false;
-    var _autoHideTimer = null;
-
-    function _showSideAd() {
-      if (_bbVisible) return;
-      if (!g || g.mode !== 'playing' || g.paused) return;
-      _bbVisible = true;
-      panel.classList.add('visible');
-      console.log('[AdManager] Left side ad displayed (auto-hiding in ' + DISPLAY_DURATION_SEC + 's).');
-
-      if (_autoHideTimer) clearTimeout(_autoHideTimer);
-      // Automatically slide out without requiring any user click
-      _autoHideTimer = setTimeout(function () {
-        _hideSideAd();
-      }, DISPLAY_DURATION_SEC * 1000);
-    }
-
-    function _hideSideAd() {
-      if (!_bbVisible) return;
-      _bbVisible = false;
-      panel.classList.remove('visible');
-      if (_autoHideTimer) {
-        clearTimeout(_autoHideTimer);
-        _autoHideTimer = null;
-      }
-      // Reset driving accumulator to negative cooldown so it waits 60s before reappearing
-      _driveSec = -COOLDOWN_SEC;
-      console.log('[AdManager] Left side ad automatically retracted. Next show in ' + COOLDOWN_SEC + 's.');
-    }
-
-    // Dismiss button on ad frame (if user wants to dismiss early)
-    if (closeBtn) {
-      closeBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        _hideSideAd();
-      });
-    }
-
-    // Monitor driving state every 250ms
-    setInterval(function () {
-      if (!g) return;
-
-      // If player paused, crashed, or in menu: hide immediately
-      if (g.mode !== 'playing' || g.paused) {
-        if (_bbVisible) _hideSideAd();
-        return;
-      }
-
-      // Actively racing on Third Mainland Bridge!
-      _driveSec += 0.25;
-
-      // Show after initial 10 seconds of active driving
-      if (!_bbVisible && _driveSec >= 10) {
-        _showSideAd();
-      }
-    }, 250);
-
-    // Global test helpers for instant console verification
-    window.__showLsrSideAd = _showSideAd;
-    window.__hideLsrSideAd = _hideSideAd;
-
-    console.log('[AdManager] Left side ad monitoring active driving time.');
   }
 
   if (document.readyState === 'loading') {
