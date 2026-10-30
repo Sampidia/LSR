@@ -13,6 +13,12 @@ import { CSS3DRenderer, CSS3DObject } from './vendor/CSS3DRenderer.js';
 (function () {
   'use strict';
 
+  // Respect Lagos Life iframe / SDK mode (suppress web ads)
+  if (window.__DISABLE_EXTERNAL_ADS__ || window.__IS_LAGOS_LIFE__) {
+    console.log('[CSS3DBillboard] 3D billboard ads suppressed (Lagos Life platform mode)');
+    return;
+  }
+
   // Adsterra Active Production Zones
   var ZONES = {
     // 300x250 Medium Rectangle (High CPM, fits 14m × 7m billboard face with 1:1 pixel aspect)
@@ -159,8 +165,8 @@ import { CSS3DRenderer, CSS3DObject } from './vendor/CSS3DRenderer.js';
 
         // Distance culling: Only render when within 220m in front of camera
         var isVisibleOnRoad = gantry && gantry.position.z <= 2000 &&
-                              (gantry.position.z < playerZ + 15) &&
-                              (gantry.position.z > playerZ - 220);
+          (gantry.position.z < playerZ + 15) &&
+          (gantry.position.z > playerZ - 220);
 
         if (!isVisibleOnRoad) {
           cssObj.position.set(0, 0, 1e5);

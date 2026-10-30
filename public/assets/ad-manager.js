@@ -14,6 +14,12 @@
 (function () {
   'use strict';
 
+  // Respect Lagos Life iframe / SDK mode (suppress web ads)
+  if (window.__DISABLE_EXTERNAL_ADS__ || window.__IS_LAGOS_LIFE__) {
+    console.log('[AdManager] External ads suppressed (Lagos Life platform mode)');
+    return;
+  }
+
   /* ─────────────────────────────────────────────────────────────────────
    * CONFIG
    * ───────────────────────────────────────────────────────────────────── */

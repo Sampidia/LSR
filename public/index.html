@@ -42,6 +42,7 @@
     </script>
 
     <script src="/assets/lagos-voice.js"></script>
+    <script src="/assets/lagoslife-bridge.js"></script>
 
     <!--
       ════════════════════════════════════════════════════════════════
@@ -50,12 +51,12 @@
       Switching to src/main.tsx loads a raw dev version of the game.
       ════════════════════════════════════════════════════════════════
     -->
-    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=vechiledaynight23"></script>
+    <script type="module" crossorigin src="/assets/index-DZDTu90F.js?v=ads5"></script>
 
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
-    <link rel="stylesheet" href="/assets/controls.css?v=ctrl1">
-    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud4">
+    <link rel="stylesheet" href="/assets/controls.css?v=ctrl3">
+    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud8">
     <style>
       #boot {
         position: fixed;
@@ -298,6 +299,13 @@
         <div class="boot-line"><i></i></div>
         <div class="boot-label"><span>Entering Lagos</span><span class="boot-pct">0%</span></div>
       </div>
+      <footer class="landing-compliance-bar">
+        <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+        <span class="sep">•</span>
+        <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a>
+        <span class="sep">•</span>
+        <a href="/about.html" target="_blank" rel="noopener">About</a>
+      </footer>
     </div>
 
     <script>
@@ -422,6 +430,7 @@
           }
 
           video.addEventListener('ended', completeTransition, { once: true });
+          setTimeout(completeTransition, 7500);
           meterAnimFrame = requestAnimationFrame(syncMeterWithVideo);
         }
 
@@ -485,6 +494,95 @@
       })();
     </script>
     <script src="/assets/speedometer.js?v=speed2"></script>
-    <script src="/assets/controls.js?v=ctrl1"></script>
+    <script src="/assets/controls.js?v=ctrl2"></script>
+    <script>
+    /* ── TOD (Time-Of-Day) Guardian — Bug 3 Fix ─────────────────────────
+       Problem: window.__LAGOS_TOD__ is set once at boot from the URL param.
+       On retry, _resetWorld() resets the scene to TOD=0 but __LAGOS_TOD__
+       is still 'night', causing the next _play() tick to immediately force
+       TOD=1.0 (night), making "day" look dark after several retries.
+       Fix: re-assert __LAGOS_TOD__ correctly from localStorage every time
+       the game calls start() / _resetWorld().
+    ──────────────────────────────────────────────────────────────────── */
+    (function patchTODGuardian() {
+      // 1. Set __LAGOS_TOD__ immediately from URL param (may override any
+      //    stale value left from a previous session on the same page load).
+      (function applyTOD() {
+        const tod = new URLSearchParams(location.search).get('tod')
+                    || localStorage.getItem('lagos_time_of_day')
+                    || 'day';
+        window.__LAGOS_TOD__ = tod;
+      })();
+
+      // 2. Wait for the game object to exist, then wrap start() so that
+      //    __LAGOS_TOD__ is refreshed from localStorage before _resetWorld.
+      let _attempts = 0;
+      function tryPatch() {
+        const g = window.__GAME__ && window.__GAME__.game;
+        if (!g) {
+          if (++_attempts < 200) setTimeout(tryPatch, 100);
+          return;
+        }
+        const origStart = g.start.bind(g);
+        g.start = function() {
+          // Re-read the authoritative TOD from localStorage on every retry
+          const tod = new URLSearchParams(location.search).get('tod')
+                      || localStorage.getItem('lagos_time_of_day')
+                      || 'day';
+          window.__LAGOS_TOD__ = tod;
+          // Also sync to the world immediately so _resetWorld's setTimeOfDay(0)
+          // then gets overridden by the correct value on first _play() tick
+          if (g.world && typeof g.world.setTimeOfDay === 'function') {
+            g.world.setTimeOfDay(tod === 'night' ? 1.0 : 0);
+            g.lastTod = (tod === 'night' ? 1.0 : 0);
+          }
+          return origStart();
+        };
+
+        // Hook game over for Lagos Life SDK platform score submission
+        if (typeof g._gameOver === 'function') {
+          const origGameOver = g._gameOver.bind(g);
+          g._gameOver = function() {
+            origGameOver();
+            if (window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife()) {
+              window.LagosLifeBridge.submitScore(this.score, this.distance);
+            }
+          };
+        }
+
+        console.log('[TODGuardian] Patched — TOD:', window.__LAGOS_TOD__);
+      }
+      setTimeout(tryPatch, 500);
+    })();
+    </script>
+
+    <!-- ── Expose boardMats for ad-manager.js ───────────────────────────────
+         Waits for window.__GAME__.game.world to be ready, then publishes
+         world.boardMats on window.__lsrWorld so ad-manager.js can swap
+         billboard textures without touching the engine bundle.
+    ─────────────────────────────────────────────────────────────────────── -->
+    <script>
+    (function exposeWorldForAds() {
+      var _attempts = 0;
+      function tryExpose() {
+        var g = window.__GAME__ && window.__GAME__.game;
+        var world = g && g.world;
+        if (world && world.boardMats && world.boardMats.length) {
+          window.__lsrWorld = { boardMats: world.boardMats };
+          console.log('[LSR Ads] __lsrWorld exposed — ' + world.boardMats.length + ' billboard mats.');
+          return;
+        }
+        if (++_attempts < 300) setTimeout(tryExpose, 100);
+      }
+      setTimeout(tryExpose, 800);
+    })();
+    </script>
+
+    <!-- ── Ad Manager ── -->
+    <script src="/assets/ad-manager.js?v=bb7"></script>
+
+    <!-- ── 3D In-World Highway Billboards (Three.js CSS3DRenderer) ─────── -->
+    <script type="module" src="/assets/css3d-billboard.js?v=3d3"></script>
+
   </body>
 </html>

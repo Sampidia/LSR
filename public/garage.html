@@ -1711,6 +1711,109 @@
       padding: 0 !important;
       border-radius: 20px !important;
     }
+    .cyber-stage-dialog.teaser-simple.lb-stage-dialog {
+      max-width: 440px !important;
+      width: 92vw !important;
+    }
+    .lb-table-wrap {
+      width: 100%;
+      margin: 8px 0;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .lb-table {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .lb-header {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr 75px;
+      padding: 6px 10px;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: rgba(0, 229, 255, 0.8);
+      border-bottom: 1px solid rgba(0, 229, 255, 0.2);
+    }
+    .lb-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 1fr 75px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+      font-weight: 600;
+      color: #fff;
+    }
+    .lb-row:nth-child(2) {
+      background: rgba(245, 197, 24, 0.12);
+      border-color: rgba(245, 197, 24, 0.45);
+    }
+    .lb-rank {
+      font-weight: 800;
+      color: var(--accent-gold);
+      font-family: var(--font-mono);
+    }
+    .lb-name {
+      text-align: left;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-car {
+      text-align: left;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-score {
+      text-align: right;
+      font-family: var(--font-mono);
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+    .lb-my-rank {
+      margin-top: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.3);
+      font-size: 11px;
+      color: #fff;
+    }
+    .lb-my-rank b {
+      color: var(--accent-gold);
+    }
+    .card-vip-badge {
+      display: inline-block;
+      align-self: flex-start;
+      background: linear-gradient(135deg, #ffd700, #ff8c00);
+      color: #000;
+      font-size: 8px;
+      font-weight: 900;
+      padding: 1px 6px;
+      border-radius: 4px;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
+    }
+    .launch-btn-vip {
+      background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%) !important;
+      color: #050b14 !important;
+      box-shadow: 0 0 28px rgba(255, 215, 0, 0.6) !important;
+    }
+    .launch-btn-vip:hover {
+      background: linear-gradient(135deg, #ffe066 0%, #ffa500 100%) !important;
+      box-shadow: 0 0 38px rgba(255, 215, 0, 0.85) !important;
+    }
     .teaser-simple-body {
       display: flex;
       flex-direction: column;
@@ -2310,12 +2413,14 @@
   </div>
   <!-- AAA Video Game Leaderboard Stage Dialog Overlay -->
   <div class="cyber-modal-overlay" id="leaderboard-dialog-overlay" onclick="if(event.target===this)window.closeTeaserModal()">
-    <div class="cyber-stage-dialog teaser-simple" role="dialog" aria-modal="true" aria-labelledby="lb-stage-title">
+    <div class="cyber-stage-dialog teaser-simple lb-stage-dialog" role="dialog" aria-modal="true" aria-labelledby="lb-stage-title">
       <div class="teaser-simple-body">
         <div class="teaser-simple-icon">🏆</div>
-        <h2 class="teaser-simple-title" id="lb-stage-title">Global Leaderboard</h2>
-        <p class="teaser-simple-msg">Compete with pilots worldwide. Coming in the next update.</p>
-        <button class="teaser-simple-close" onclick="window.closeTeaserModal()">Got it</button>
+        <h2 class="teaser-simple-title" id="lb-stage-title">Lagos Life Leaderboard</h2>
+        <div id="lb-table-wrap" class="lb-table-wrap">
+          <p class="teaser-simple-msg">Compete with pilots worldwide on Lagos Life.</p>
+        </div>
+        <button class="teaser-simple-close" onclick="window.closeTeaserModal()">Close</button>
       </div>
     </div>
   </div>
@@ -2416,10 +2521,12 @@
       <div class="car-card" id="card-flying_danfo" onclick="selectCar('flying_danfo')">
         <span class="card-type">Heavy Ion</span>
         <span class="card-name">Flying Danfo</span>
+        <span class="card-vip-badge" id="badge-flying_danfo" style="display:none;">VIP ₦300</span>
       </div>
       <div class="car-card" id="card-flying_tortoise" onclick="selectCar('flying_tortoise')">
         <span class="card-type">Jet Cruiser</span>
         <span class="card-name">Flying Tortoise</span>
+        <span class="card-vip-badge" id="badge-flying_tortoise" style="display:none;">VIP ₦300</span>
       </div>
     </div>
 
@@ -2442,6 +2549,7 @@
 
   <!-- Scripts: Three.js GLTF Bundle and Player Roadster Helper -->
   <script src="/assets/three-gltf.js"></script>
+  <script src="/assets/lagoslife-bridge.js"></script>
   <script src="/assets/player-roadster.js"></script>
 
   <script>
@@ -2847,7 +2955,63 @@
 
       document.getElementById('val-armor').textContent = cfg.armor;
       document.getElementById('fill-armor').style.width = cfg.armorPct + '%';
+
+      // Lagos Life Entitlement Check for Launch / Unlock Button
+      const launchBtn = document.getElementById('launch-btn');
+      if (launchBtn) {
+        const isOwned = !window.LagosLifeBridge || window.LagosLifeBridge.hasCar(key);
+        if (isOwned) {
+          launchBtn.innerHTML = '<span>&#x25B6; Launch Race</span>';
+          launchBtn.className = 'launch-btn';
+          launchBtn.onclick = () => window.launchRace();
+        } else {
+          launchBtn.innerHTML = '<span>&#x1F512; Unlock Vehicle (&#8358;300)</span>';
+          launchBtn.className = 'launch-btn launch-btn-vip';
+          launchBtn.onclick = () => handleUnlockCar(key);
+        }
+      }
     }
+
+    async function handleUnlockCar(key) {
+      if (!window.LagosLifeBridge) return;
+      playBeep(850, 0.1, 'sine');
+      const launchBtn = document.getElementById('launch-btn');
+      if (launchBtn) {
+        launchBtn.innerHTML = '<span>&#x26A1; PROCESSING...</span>';
+      }
+      const res = await window.LagosLifeBridge.purchaseCar(key);
+      if (res && res.success) {
+        playBeep(1200, 0.25, 'triangle');
+        window.showCyberToast(VEHICLES[key]?.name + ' unlocked successfully!', '&#x2705;');
+        updateUI(key);
+        updateVIPBadges();
+      } else {
+        updateUI(key);
+      }
+    }
+
+    function updateVIPBadges() {
+      const isLL = window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife();
+      ['flying_danfo', 'flying_tortoise'].forEach(k => {
+        const unowned = isLL && !window.LagosLifeBridge.hasCar(k);
+        const b = document.getElementById(`badge-${k}`);
+        if (b) b.style.display = unowned ? 'inline-block' : 'none';
+        const slide = document.querySelector(`.slider-slide[data-key="${k}"]`);
+        if (slide) {
+          let sBadge = slide.querySelector('.card-vip-badge');
+          if (unowned && !sBadge) {
+            slide.insertAdjacentHTML('beforeend', '<span class="card-vip-badge">VIP &#8358;300</span>');
+          } else if (!unowned && sBadge) {
+            sBadge.remove();
+          }
+        }
+      });
+    }
+
+    window.addEventListener('lsr:entitlementsUpdated', () => {
+      updateUI(currentCarKey);
+      updateVIPBadges();
+    });
 
     /* ── LAUNCH RACE ─────────────────────────────────────────────────────── */
     window.applyGarageMood = function (tod) {
@@ -3031,7 +3195,8 @@
         const slide = document.createElement('div');
         slide.className = 'slider-slide';
         slide.dataset.key = key;
-        slide.innerHTML = `<span class="card-type">${meta.type}</span><span class="card-name">${meta.name}</span>`;
+        const isVIP = (key === 'flying_danfo' || key === 'flying_tortoise') && window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife() && !window.LagosLifeBridge.hasCar(key);
+        slide.innerHTML = `<span class="card-type">${meta.type}</span><span class="card-name">${meta.name}</span>` + (isVIP ? `<span class="card-vip-badge">VIP &#8358;300</span>` : '');
         slide.addEventListener('click', () => selectCar(key));
         inner.appendChild(slide);
       });
@@ -3220,11 +3385,32 @@
       }
     };
 
-    window.openTeaserModal = function(type) {
+    window.openTeaserModal = async function(type) {
       playBeep(720, 0.08, 'sine');
       if (type === 'leaderboard') {
         const overlay = document.getElementById('leaderboard-dialog-overlay');
         if (overlay) overlay.classList.add('open');
+        const wrap = document.getElementById('lb-table-wrap');
+        if (wrap && window.LagosLifeBridge) {
+          wrap.innerHTML = '<div style="padding:18px;color:rgba(0,240,255,0.85);font-size:12px;font-family:var(--font-mono);letter-spacing:0.05em;">Connecting to Lagos Life Grid...</div>';
+          try {
+            const data = await window.LagosLifeBridge.getLeaderboard(8);
+            if (data && data.entries && data.entries.length) {
+              let html = '<div class="lb-table">';
+              html += '<div class="lb-header"><span>#</span><span>Racer</span><span>Vehicle</span><span>Score</span></div>';
+              data.entries.forEach(e => {
+                html += `<div class="lb-row"><span class="lb-rank">${e.rank}</span><span class="lb-name">${e.name}</span><span class="lb-car">${e.car || 'Flying T'}</span><span class="lb-score">${e.score.toLocaleString()} M</span></div>`;
+              });
+              html += '</div>';
+              if (data.playerRank) {
+                html += `<div class="lb-my-rank">Your Lagos Life Rank: <b>#${data.playerRank}</b></div>`;
+              }
+              wrap.innerHTML = html;
+            }
+          } catch (e) {
+            wrap.innerHTML = '<p class="teaser-simple-msg">Compete with pilots worldwide on Lagos Life.</p>';
+          }
+        }
       } else if (type === 'custom') {
         const overlay = document.getElementById('custom-cars-dialog-overlay');
         if (overlay) overlay.classList.add('open');
@@ -3250,6 +3436,16 @@
     // Start with 15% progress indicator, then load
     setHangarProgress(0.15, 'Entering Garage');
     highlightCarCard(currentCarKey);
+    updateVIPBadges();
+    if (window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife()) {
+      const lBadge = document.querySelector('#hub-tile-leaderboard .hub-tile-badge');
+      if (lBadge) {
+        lBadge.textContent = 'Top';
+        lBadge.style.background = 'rgba(0, 229, 255, 0.2)';
+        lBadge.style.borderColor = 'rgba(0, 229, 255, 0.5)';
+        lBadge.style.color = '#00f0ff';
+      }
+    }
     loadCar(currentCarKey);
     animate(performance.now());
   })();

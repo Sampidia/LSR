@@ -42,6 +42,7 @@
     </script>
 
     <script src="/assets/lagos-voice.js"></script>
+    <script src="/assets/lagoslife-bridge.js"></script>
 
     <!--
       ════════════════════════════════════════════════════════════════
@@ -55,7 +56,7 @@
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
     <link rel="stylesheet" href="/assets/controls.css?v=ctrl3">
-    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud7">
+    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud8">
     <style>
       #boot {
         position: fixed;
@@ -298,6 +299,13 @@
         <div class="boot-line"><i></i></div>
         <div class="boot-label"><span>Entering Lagos</span><span class="boot-pct">0%</span></div>
       </div>
+      <footer class="landing-compliance-bar">
+        <a href="/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+        <span class="sep">•</span>
+        <a href="/terms.html" target="_blank" rel="noopener">Terms of Service</a>
+        <span class="sep">•</span>
+        <a href="/about.html" target="_blank" rel="noopener">About</a>
+      </footer>
     </div>
 
     <script>
@@ -530,6 +538,18 @@
           }
           return origStart();
         };
+
+        // Hook game over for Lagos Life SDK platform score submission
+        if (typeof g._gameOver === 'function') {
+          const origGameOver = g._gameOver.bind(g);
+          g._gameOver = function() {
+            origGameOver();
+            if (window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife()) {
+              window.LagosLifeBridge.submitScore(this.score, this.distance);
+            }
+          };
+        }
+
         console.log('[TODGuardian] Patched — TOD:', window.__LAGOS_TOD__);
       }
       setTimeout(tryPatch, 500);
