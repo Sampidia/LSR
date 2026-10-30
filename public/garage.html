@@ -2549,7 +2549,8 @@
 
   <!-- Scripts: Three.js GLTF Bundle and Player Roadster Helper -->
   <script src="/assets/three-gltf.js"></script>
-  <script src="/assets/lagoslife-bridge.js"></script>
+  <script src="https://lagoslife.app/sdk/vatar-games-v1.js"></script>
+  <script src="/assets/lagoslife-bridge.js?v=ll2"></script>
   <script src="/assets/player-roadster.js"></script>
 
   <script>
@@ -2730,6 +2731,10 @@
 
     let currentCarKey = localStorage.getItem('lagos_player_car') || 'flying_t';
     if (!VEHICLES[currentCarKey]) currentCarKey = 'flying_t';
+    // If in Lagos Life and player stored a VIP car that is not yet owned, fallback to free starter car
+    if (window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife() && !window.LagosLifeBridge.hasCar(currentCarKey)) {
+      currentCarKey = 'flying_t';
+    }
 
     /* ── SCENE, CAMERA, RENDERER ────────────────────────────────────────── */
     const container = document.getElementById('canvas-container');
@@ -3072,6 +3077,10 @@
     })();
 
     window.launchRace = function () {
+      if (window.LagosLifeBridge && !window.LagosLifeBridge.hasCar(currentCarKey)) {
+        handleUnlockCar(currentCarKey);
+        return;
+      }
       const currentTod = localStorage.getItem('lagos_time_of_day') || 'day';
       playBeep(900, 0.15, 'triangle');
       localStorage.setItem('lagos_player_car', currentCarKey);

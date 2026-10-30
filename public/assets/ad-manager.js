@@ -14,12 +14,6 @@
 (function () {
   'use strict';
 
-  // Respect Lagos Life iframe / SDK mode (suppress web ads)
-  if (window.__DISABLE_EXTERNAL_ADS__ || window.__IS_LAGOS_LIFE__) {
-    console.log('[AdManager] External ads suppressed (Lagos Life platform mode)');
-    return;
-  }
-
   /* ─────────────────────────────────────────────────────────────────────
    * CONFIG
    * ───────────────────────────────────────────────────────────────────── */
@@ -55,6 +49,7 @@
   var INTERSTITIAL_EVERY = 3;
 
   function onGameOver() {
+    if (window.__DISABLE_EXTERNAL_ADS__ || window.__IS_LAGOS_LIFE__) return;
     _gameOverCount++;
     if (_gameOverCount % INTERSTITIAL_EVERY === 0) {
       _showRewardedOverlay();
@@ -301,6 +296,10 @@
   }
 
   function _initBillboards() {
+    if (window.__DISABLE_EXTERNAL_ADS__ || window.__IS_LAGOS_LIFE__) {
+      console.log('[AdManager] Billboard ads suppressed (Lagos Life platform mode)');
+      return;
+    }
     var urls = CFG.adstreaBillboardUrls;
     if (!urls || urls.every(function (u) { return !u; })) {
       console.log('[AdManager] No billboard URLs yet — billboard_i.jpg active.');

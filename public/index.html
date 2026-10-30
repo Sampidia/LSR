@@ -41,8 +41,9 @@
       }
     </script>
 
+    <script src="https://lagoslife.app/sdk/vatar-games-v1.js"></script>
     <script src="/assets/lagos-voice.js"></script>
-    <script src="/assets/lagoslife-bridge.js"></script>
+    <script src="/assets/lagoslife-bridge.js?v=ll2"></script>
 
     <!--
       ════════════════════════════════════════════════════════════════
@@ -525,6 +526,9 @@
         }
         const origStart = g.start.bind(g);
         g.start = function() {
+          if (window.LagosLifeBridge && typeof window.LagosLifeBridge.resetRun === 'function') {
+            window.LagosLifeBridge.resetRun();
+          }
           // Re-read the authoritative TOD from localStorage on every retry
           const tod = new URLSearchParams(location.search).get('tod')
                       || localStorage.getItem('lagos_time_of_day')
@@ -539,13 +543,16 @@
           return origStart();
         };
 
-        // Hook game over for Lagos Life SDK platform score submission
+        // Hook game over for Lagos Life SDK platform score submission & respawn sheet
         if (typeof g._gameOver === 'function') {
           const origGameOver = g._gameOver.bind(g);
           g._gameOver = function() {
             origGameOver();
             if (window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife()) {
-              window.LagosLifeBridge.submitScore(this.score, this.distance);
+              const shown = window.LagosLifeBridge.showRespawnSheet(this.score, this.distance);
+              if (!shown) {
+                window.LagosLifeBridge.submitScore(this.score, this.distance);
+              }
             }
           };
         }

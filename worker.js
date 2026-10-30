@@ -79,7 +79,21 @@ export default {
 
     // ── 2. Static Asset Fallback ─────────────────────────────────────────
     // Serves all game files (index.html, garage.html, GLBs, JS, audio) from ./dist
-    return env.ASSETS.fetch(request);
+    const res = await env.ASSETS.fetch(request);
+
+    // Ensure headers allow framing inside Lagos Life and its sandbox
+    const newHeaders = new Headers(res.headers);
+    newHeaders.set(
+      'Content-Security-Policy',
+      'frame-ancestors https://lagoslife.app https://www.lagoslife.app https://naijalife.app https://www.naijalife.app https://lagoslife.eliysites.com https://*.lagoslife.app http://localhost:*'
+    );
+    newHeaders.delete('X-Frame-Options');
+
+    return new Response(res.body, {
+      status: res.status,
+      statusText: res.statusText,
+      headers: newHeaders
+    });
   }
 };
 
