@@ -256,25 +256,60 @@
     },
 
     /**
-     * Fetch top leaderboard ranks
+     * Fetch top leaderboard ranks from Lagos Life Vatar API
      */
     async getLeaderboard(limit = 10) {
-      if (window.Vatar && typeof window.Vatar.getLeaderboard === 'function') {
-        try {
-          return await window.Vatar.getLeaderboard({ limit });
-        } catch (err) {
-          console.warn('[LagosLifeBridge] getLeaderboard caught:', err);
+      if (window.Vatar) {
+        const fetchFn = typeof window.Vatar.leaderboard === 'function'
+          ? window.Vatar.leaderboard
+          : (typeof window.Vatar.getLeaderboard === 'function' ? window.Vatar.getLeaderboard : null);
+
+        if (fetchFn) {
+          try {
+            const raw = await fetchFn.call(window.Vatar, { limit });
+            console.log('[LagosLifeBridge] Live Vatar leaderboard response:', raw);
+
+            let topList = [];
+            let meData = null;
+
+            if (raw && Array.isArray(raw.top)) {
+              topList = raw.top;
+              meData = raw.me;
+            } else if (raw && Array.isArray(raw.entries)) {
+              topList = raw.entries;
+              meData = raw.me || (raw.playerRank ? { rank: raw.playerRank } : null);
+            } else if (Array.isArray(raw)) {
+              topList = raw;
+            }
+
+            const entries = topList.map((item, idx) => ({
+              rank: item.rank !== undefined ? item.rank : (idx + 1),
+              name: item.name || item.player?.name || item.username || 'Lagos Pilot',
+              score: typeof item.score === 'number' ? item.score : parseInt(item.score || '0', 10),
+              car: item.car || 'Flying T'
+            }));
+
+            return {
+              entries,
+              playerRank: meData?.rank || null,
+              playerScore: meData?.score || null,
+              playerLabel: meData?.label || null,
+              isLive: true
+            };
+          } catch (err) {
+            console.warn('[LagosLifeBridge] Vatar.leaderboard error:', err);
+          }
         }
       }
+
+      // If outside Lagos Life or offline, show local high score if recorded
+      const localBest = parseInt(localStorage.getItem('lagos_high_score') || '0', 10);
       return {
-        entries: [
-          { rank: 1, name: 'Chidi_VIP', score: 38420, car: 'Flying Danfo' },
-          { rank: 2, name: 'LekkiPilot', score: 29150, car: 'Flying Tortoise' },
-          { rank: 3, name: 'YabaRacer', score: 24800, car: 'Flying T' },
-          { rank: 4, name: 'MainlandDrift', score: 19650, car: 'Flying Danfo' },
-          { rank: 5, name: 'EkoCyber', score: 17200, car: 'Flying T' }
-        ],
-        playerRank: state.player ? 42 : null
+        entries: localBest > 0 ? [
+          { rank: 1, name: state.player?.name || 'Local Driver', score: localBest, car: 'Flying T' }
+        ] : [],
+        playerRank: localBest > 0 ? 1 : null,
+        isLive: false
       };
     },
 

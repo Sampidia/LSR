@@ -2415,7 +2415,15 @@
   <div class="cyber-modal-overlay" id="leaderboard-dialog-overlay" onclick="if(event.target===this)window.closeTeaserModal()">
     <div class="cyber-stage-dialog teaser-simple lb-stage-dialog" role="dialog" aria-modal="true" aria-labelledby="lb-stage-title">
       <div class="teaser-simple-body">
-        <div class="teaser-simple-icon">🏆</div>
+        <div class="teaser-simple-icon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+            <path d="M4 22h16"></path>
+            <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"></path>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"></path>
+          </svg>
+        </div>
         <h2 class="teaser-simple-title" id="lb-stage-title">Lagos Life Leaderboard</h2>
         <div id="lb-table-wrap" class="lb-table-wrap">
           <p class="teaser-simple-msg">Compete with pilots worldwide on Lagos Life.</p>
@@ -2550,7 +2558,7 @@
   <!-- Scripts: Three.js GLTF Bundle and Player Roadster Helper -->
   <script src="/assets/three-gltf.js"></script>
   <script src="https://lagoslife.app/sdk/vatar-games-v1.js"></script>
-  <script src="/assets/lagoslife-bridge.js?v=ll3"></script>
+  <script src="/assets/lagoslife-bridge.js?v=ll4"></script>
   <script src="/assets/player-roadster.js"></script>
 
   <script>
@@ -3421,6 +3429,8 @@
                 html += `<div class="lb-my-rank">Your Lagos Life Rank: <b>#${data.playerRank}</b></div>`;
               }
               wrap.innerHTML = html;
+            } else {
+              wrap.innerHTML = '<div style="padding:22px 14px;text-align:center;font-family:var(--font-mono);font-size:11px;color:rgba(0,229,255,0.75);letter-spacing:0.06em;line-height:1.6;">NO RACERS LOGGED YET ON THE GRID.<br><span style="color:#fff;font-weight:700;">COMPLETE A RACE TO CLAIM #1!</span></div>';
             }
           } catch (e) {
             wrap.innerHTML = '<p class="teaser-simple-msg">Compete with pilots worldwide on Lagos Life.</p>';
