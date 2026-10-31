@@ -63,84 +63,192 @@
   function _buildOverlay() {
     if (_overlayEl) return _overlayEl;
 
+    // Inject cyber modal styles for reward popup
+    if (!document.getElementById('lsr-ad-reward-css')) {
+      var styleEl = document.createElement('style');
+      styleEl.id = 'lsr-ad-reward-css';
+      styleEl.textContent = [
+        '#lsr-reward-overlay {',
+        '  position: fixed; inset: 0; z-index: 9999999;',
+        '  display: none; align-items: center; justify-content: center;',
+        '  background: radial-gradient(circle at 50% 45%, rgba(10, 16, 26, 0.88) 0%, rgba(3, 6, 12, 0.96) 100%);',
+        '  backdrop-filter: blur(20px) saturate(190%);',
+        '  -webkit-backdrop-filter: blur(20px) saturate(190%);',
+        '  font-family: "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;',
+        '  color: #fff; padding: 16px; user-select: none;',
+        '  animation: lsrAdFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);',
+        '}',
+        '@keyframes lsrAdFadeIn { from { opacity: 0; } to { opacity: 1; } }',
+        '#lsr-reward-overlay .cyber-reward-dialog {',
+        '  position: relative; width: 100%; max-width: 360px;',
+        '  background: linear-gradient(175deg, rgba(12, 18, 30, 0.98) 0%, rgba(5, 8, 16, 0.96) 100%);',
+        '  backdrop-filter: blur(28px) saturate(200%);',
+        '  -webkit-backdrop-filter: blur(28px) saturate(200%);',
+        '  border: 1.5px solid rgba(0, 229, 255, 0.35);',
+        '  border-radius: 20px; padding: 20px 22px 18px;',
+        '  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95), 0 0 45px rgba(0, 229, 255, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.25);',
+        '  box-sizing: border-box;',
+        '  display: flex; flex-direction: column; align-items: center;',
+        '}',
+        '#lsr-reward-overlay .stage-frame-reticle {',
+        '  position: absolute; width: 14px; height: 14px;',
+        '  border: 2px solid rgba(0, 229, 255, 0.55); pointer-events: none;',
+        '}',
+        '#lsr-reward-overlay .stage-frame-reticle.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }',
+        '#lsr-reward-overlay .stage-frame-reticle.tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }',
+        '#lsr-reward-overlay .stage-frame-reticle.bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }',
+        '#lsr-reward-overlay .stage-frame-reticle.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }',
+        '#lsr-reward-overlay .top-chamfer-notch {',
+        '  position: absolute; top: -2px; right: 48px; width: 50px; height: 3px;',
+        '  background: #00e5ff; box-shadow: 0 0 12px #00e5ff; border-radius: 2px;',
+        '}',
+        '#lsr-reward-overlay .stage-header {',
+        '  width: 100%; display: flex; justify-content: space-between; align-items: flex-start;',
+        '  margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid rgba(0, 229, 255, 0.15);',
+        '}',
+        '#lsr-reward-overlay .stage-breadcrumb {',
+        '  display: flex; align-items: center; gap: 8px;',
+        '  font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 700;',
+        '  letter-spacing: 0.12em; color: #00e5ff; text-transform: uppercase;',
+        '}',
+        '#lsr-reward-overlay .stage-blink-dot {',
+        '  width: 6px; height: 6px; border-radius: 50%;',
+        '  background: #00e5ff; box-shadow: 0 0 8px #00e5ff;',
+        '  animation: lsrAdPulse 1.8s infinite;',
+        '}',
+        '@keyframes lsrAdPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.75); } }',
+        '#lsr-reward-overlay .stage-title {',
+        '  margin: 4px 0 0; font-size: 20px; font-weight: 800;',
+        '  letter-spacing: 0.05em; text-transform: uppercase; color: #fff;',
+        '  text-shadow: 0 0 16px rgba(0, 229, 255, 0.45); text-align: left;',
+        '}',
+        '#lsr-reward-overlay .stage-close-btn {',
+        '  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15);',
+        '  border-radius: 8px; color: rgba(255, 255, 255, 0.7); cursor: pointer; padding: 6px;',
+        '  display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;',
+        '}',
+        '#lsr-reward-overlay .stage-close-btn:hover {',
+        '  background: rgba(255, 45, 85, 0.2); border-color: rgba(255, 45, 85, 0.5); color: #ff2d55;',
+        '}',
+        '#lsr-reward-overlay .ad-slot-box {',
+        '  width: 300px; height: 250px; background: #000; border-radius: 8px;',
+        '  overflow: hidden; border: 1px solid rgba(0, 229, 255, 0.22);',
+        '  display: flex; align-items: center; justify-content: center; margin-bottom: 12px;',
+        '}',
+        '#lsr-reward-overlay .progress-wrap {',
+        '  width: 100%; background: rgba(0, 229, 255, 0.1); border-radius: 4px; height: 4px;',
+        '  overflow: hidden; margin-bottom: 8px;',
+        '}',
+        '#lsr-reward-overlay .progress-bar {',
+        '  width: 0%; height: 100%; background: linear-gradient(90deg, #00e5ff, #00b4d8);',
+        '  box-shadow: 0 0 10px #00e5ff; transition: width 0.25s linear;',
+        '}',
+        '#lsr-reward-overlay .status-row {',
+        '  width: 100%; display: flex; justify-content: space-between; align-items: center;',
+        '  font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 700;',
+        '  color: #00e5ff; letter-spacing: 0.08em; margin-bottom: 12px; text-transform: uppercase;',
+        '}',
+        '#lsr-reward-overlay .claim-btn {',
+        '  width: 100%; padding: 13px 18px; border-radius: 12px; border: none;',
+        '  font-family: "Outfit", sans-serif; font-size: 13px; font-weight: 800;',
+        '  letter-spacing: 0.12em; text-transform: uppercase;',
+        '  display: flex; align-items: center; justify-content: center; gap: 8px;',
+        '  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); cursor: not-allowed;',
+        '}',
+        '#lsr-reward-overlay .claim-btn.disabled {',
+        '  background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.4);',
+        '}',
+        '#lsr-reward-overlay .claim-btn.ready {',
+        '  background: linear-gradient(135deg, #00e5ff 0%, #0099cc 100%);',
+        '  color: #040914; box-shadow: 0 0 24px rgba(0, 229, 255, 0.5); cursor: pointer;',
+        '}',
+        '#lsr-reward-overlay .claim-btn.ready:hover {',
+        '  box-shadow: 0 0 32px rgba(0, 229, 255, 0.7); filter: brightness(1.08);',
+        '}',
+        '#lsr-reward-overlay .skip-btn {',
+        '  background: transparent; border: none; color: rgba(255, 255, 255, 0.45);',
+        '  font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 600;',
+        '  letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer;',
+        '  padding: 8px 0 2px; margin-top: 8px; transition: color 0.2s;',
+        '  display: flex; align-items: center; justify-content: center; gap: 6px;',
+        '}',
+        '#lsr-reward-overlay .skip-btn:hover { color: #ffffff; }'
+      ].join('\n');
+      document.head.appendChild(styleEl);
+    }
+
     var el = document.createElement('div');
     el.id = 'lsr-reward-overlay';
-    el.style.cssText = [
-      'position:fixed;inset:0;z-index:99999',
-      'display:none;flex-direction:column;align-items:center;justify-content:center',
-      'background:rgba(4,7,14,0.88)',
-      'backdrop-filter:blur(12px)',
-      '-webkit-backdrop-filter:blur(12px)',
-      'font-family:"Outfit","Inter",-apple-system,sans-serif',
-      'color:#fff',
-      'text-align:center',
-      'padding:16px',
-      'user-select:none',
-    ].join(';');
 
     el.innerHTML = [
-      '<div style="',
-      '  background: linear-gradient(180deg, #161c28 0%, #0d121c 100%);',
-      '  border: 1.5px solid rgba(0, 240, 255, 0.4);',
-      '  border-radius: 12px;',
-      '  box-shadow: 0 20px 60px rgba(0,0,0,0.9), 0 0 30px rgba(0,240,255,0.2);',
-      '  padding: 18px 20px 16px;',
-      '  width: 326px;',
-      '  max-width: 95vw;',
-      '  display: flex;',
-      '  flex-direction: column;',
-      '  align-items: center;',
-      '  box-sizing: border-box;',
-      '">',
-      '  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">',
-      '    <span style="font-size:22px">❤️</span>',
-      '    <h2 style="margin:0;font-size:20px;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#00f0ff,#f5c518);-webkit-background-clip:text;-webkit-text-fill-color:transparent">SECOND CHANCE!</h2>',
+      '<div class="cyber-reward-dialog" role="dialog" aria-modal="true" aria-labelledby="lsr-ad-title">',
+      '  <div class="stage-frame-reticle tl"></div>',
+      '  <div class="stage-frame-reticle tr"></div>',
+      '  <div class="stage-frame-reticle bl"></div>',
+      '  <div class="stage-frame-reticle br"></div>',
+      '  <div class="top-chamfer-notch"></div>',
+      '  <div class="stage-header">',
+      '    <div>',
+      '      <div class="stage-breadcrumb">',
+      '        <span class="stage-blink-dot"></span>',
+      '        <span>REVIVAL PROTOCOL</span>',
+      '      </div>',
+      '      <h2 class="stage-title" id="lsr-ad-title">SECOND CHANCE</h2>',
+      '    </div>',
+      '    <button class="stage-close-btn" id="lsr-reward-close-btn" title="Close">',
+      '      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">',
+      '        <line x1="18" y1="6" x2="6" y2="18"></line>',
+      '        <line x1="6" y1="6" x2="18" y2="18"></line>',
+      '      </svg>',
+      '    </button>',
       '  </div>',
-      '  <p style="margin:0 0 10px;font-size:12px;color:rgba(255,255,255,0.72);line-height:1.4">Watch sponsor ad to continue your race</p>',
-      '  <!-- Adsterra 300x250 Banner Slot -->',
-      '  <div id="lsr-reward-ad-slot" style="width:300px;height:250px;background:#000;border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:12px"></div>',
-      '  <!-- 5-Second Countdown Bar -->',
-      '  <div style="width:100%;background:rgba(255,255,255,0.08);border-radius:6px;height:6px;overflow:hidden;margin-bottom:8px">',
-      '    <div id="lsr-reward-progress" style="width:0%;height:100%;background:linear-gradient(90deg,#00f0ff,#f5c518);transition:width 0.25s linear"></div>',
+      '  <div id="lsr-reward-ad-slot" class="ad-slot-box"></div>',
+      '  <div class="progress-wrap">',
+      '    <div id="lsr-reward-progress" class="progress-bar"></div>',
       '  </div>',
-      '  <div id="lsr-reward-timer-text" style="font-size:12px;font-weight:700;color:#00f0ff;letter-spacing:0.5px;margin-bottom:10px">Sponsor Ad: Reviving in 5s...</div>',
-      '  <!-- Continue Button -->',
-      '  <button id="lsr-reward-claim-btn" disabled style="',
-      '    width: 100%;',
-      '    background: rgba(255,255,255,0.12);',
-      '    border: none;',
-      '    border-radius: 8px;',
-      '    color: rgba(255,255,255,0.45);',
-      '    font-size: 14px;',
-      '    font-weight: 800;',
-      '    letter-spacing: 0.05em;',
-      '    padding: 12px 20px;',
-      '    cursor: not-allowed;',
-      '    transition: all 0.25s ease;',
-      '    font-family: inherit;',
-      '  ">⏳ Watching sponsor ad (5s)...</button>',
-      '  <!-- Skip Option -->',
-      '  <button id="lsr-reward-skip-btn" style="background:none;border:none;margin-top:10px;color:rgba(255,255,255,0.4);font-size:12px;cursor:pointer;font-family:inherit;text-decoration:underline">No thanks, end run</button>',
+      '  <div class="status-row">',
+      '    <span>BROADCAST LINK</span>',
+      '    <span id="lsr-reward-timer-text">STANDBY // 5S</span>',
+      '  </div>',
+      '  <button id="lsr-reward-claim-btn" class="claim-btn disabled" disabled>',
+      '    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite">',
+      '      <path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+      '    </svg>',
+      '    <span>STANDBY (5S)</span>',
+      '  </button>',
+      '  <button id="lsr-reward-skip-btn" class="skip-btn">',
+      '    <span>ABORT RUN</span>',
+      '    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">',
+      '      <line x1="5" y1="12" x2="19" y2="12"></line>',
+      '      <polyline points="12 5 19 12 12 19"></polyline>',
+      '    </svg>',
+      '  </button>',
       '</div>'
     ].join('');
 
     document.body.appendChild(el);
     _overlayEl = el;
 
+    function _closeOverlay() {
+      if (_rewardCountdownTimer) {
+        clearInterval(_rewardCountdownTimer);
+        _rewardCountdownTimer = null;
+      }
+      _overlayEl.style.display = 'none';
+    }
+
     // Claim button
     var claimBtn = el.querySelector('#lsr-reward-claim-btn');
     claimBtn.addEventListener('click', function () {
       if (claimBtn.disabled) return;
-      if (_rewardCountdownTimer) clearInterval(_rewardCountdownTimer);
-      _overlayEl.style.display = 'none';
+      _closeOverlay();
       _grantExtraLife();
     });
 
-    // Skip button
-    el.querySelector('#lsr-reward-skip-btn').addEventListener('click', function () {
-      if (_rewardCountdownTimer) clearInterval(_rewardCountdownTimer);
-      _overlayEl.style.display = 'none';
-    });
+    // Skip / Close buttons
+    el.querySelector('#lsr-reward-skip-btn').addEventListener('click', _closeOverlay);
+    var closeBtn = el.querySelector('#lsr-reward-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', _closeOverlay);
 
     return el;
   }
@@ -157,12 +265,14 @@
     // Reset UI state
     bar.style.width = '0%';
     claimBtn.disabled = true;
-    claimBtn.style.background = 'rgba(255,255,255,0.12)';
-    claimBtn.style.color = 'rgba(255,255,255,0.45)';
-    claimBtn.style.boxShadow = 'none';
-    claimBtn.style.cursor = 'not-allowed';
-    claimBtn.textContent = '⏳ Watching sponsor ad (5s)...';
-    timerText.textContent = 'Sponsor Ad: Reviving in 5s...';
+    claimBtn.className = 'claim-btn disabled';
+    claimBtn.innerHTML = [
+      '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite">',
+      '  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+      '</svg>',
+      '<span>STANDBY (5S)</span>'
+    ].join('');
+    timerText.textContent = 'STANDBY // 5S';
 
     // Inject Adsterra 300x250 banner into slot
     slot.innerHTML = '';
@@ -213,20 +323,28 @@
       bar.style.width = pct + '%';
 
       if (remaining > 0) {
-        timerText.textContent = 'Sponsor Ad: Reviving in ' + Math.ceil(remaining) + 's...';
-        claimBtn.textContent = '⏳ Watching sponsor ad (' + Math.ceil(remaining) + 's)...';
+        var sec = Math.ceil(remaining);
+        timerText.textContent = 'STANDBY // ' + sec + 'S';
+        claimBtn.innerHTML = [
+          '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite">',
+          '  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>',
+          '</svg>',
+          '<span>STANDBY (' + sec + 'S)</span>'
+        ].join('');
       } else {
         clearInterval(_rewardCountdownTimer);
         _rewardCountdownTimer = null;
         bar.style.width = '100%';
-        timerText.textContent = '❤️ SPONSOR REWARD READY!';
+        timerText.textContent = 'SYS READY';
 
         claimBtn.disabled = false;
-        claimBtn.style.background = 'linear-gradient(135deg, #00f0ff, #0090ff)';
-        claimBtn.style.color = '#000';
-        claimBtn.style.boxShadow = '0 8px 24px rgba(0, 240, 255, 0.45)';
-        claimBtn.style.cursor = 'pointer';
-        claimBtn.textContent = '❤️ RESUME RACE NOW';
+        claimBtn.className = 'claim-btn ready';
+        claimBtn.innerHTML = [
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">',
+          '  <polygon points="5 3 19 12 5 21 5 3"/>',
+          '</svg>',
+          '<span>RESUME RACE</span>'
+        ].join('');
 
         // Auto-resume after 1.2s if player doesn't tap
         setTimeout(function () {

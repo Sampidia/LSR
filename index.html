@@ -57,7 +57,7 @@
     <link rel="stylesheet" crossorigin href="/assets/index-D6_GbB_6.css">
     <link rel="stylesheet" href="/assets/speedometer.css?v=speed2">
     <link rel="stylesheet" href="/assets/controls.css?v=ctrl3">
-    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud8">
+    <link rel="stylesheet" href="/assets/hud-overhaul.css?v=hud9">
     <style>
       #boot {
         position: fixed;
@@ -376,6 +376,10 @@
           if (activated) return;
           activated = true;
 
+          // Remove landing compliance bar immediately once player begins entering Lagos
+          const compBar = document.querySelector('.landing-compliance-bar');
+          if (compBar) compBar.remove();
+
           // Transition to the loading state with video and meter
           boot.classList.add('loading-active');
           boot.classList.add('video-ready');
@@ -402,6 +406,8 @@
           function completeTransition() {
             if (transitionDone) return;
             transitionDone = true;
+            const compBar = document.querySelector('.landing-compliance-bar');
+            if (compBar) compBar.remove();
             if (meterAnimFrame) cancelAnimationFrame(meterAnimFrame);
             if (meterBar) meterBar.style.transform = 'scaleX(1)';
             if (meterPct) meterPct.textContent = '100%';
@@ -440,6 +446,8 @@
         const isRaceLaunch = urlParams.has('race') || urlParams.get('launch') === '1';
 
         if (isRaceLaunch) {
+          const compBar = document.querySelector('.landing-compliance-bar');
+          if (compBar) compBar.remove();
           boot.classList.add('loading-active');
           boot.classList.add('video-ready');
           const submark = document.querySelector('.boot-submark');
@@ -586,7 +594,7 @@
     </script>
 
     <!-- ── Ad Manager ── -->
-    <script src="/assets/ad-manager.js?v=bb7"></script>
+    <script src="/assets/ad-manager.js?v=bb8"></script>
 
     <!-- ── 3D In-World Highway Billboards (Three.js CSS3DRenderer) ─────── -->
     <script type="module" src="/assets/css3d-billboard.js?v=3d3"></script>

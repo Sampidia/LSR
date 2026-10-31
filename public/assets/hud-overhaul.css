@@ -939,7 +939,10 @@
   }
 }
 
-/* ── 7. LANDING COMPLIANCE BAR (Privacy, Terms, About) ─────────────────── */
+/* ── 7. LANDING COMPLIANCE BAR (Privacy, Terms, About) ───────────────────
+   CRITICAL: ONLY visible & clickable on cold initial landing screen before ENTER LAGOS is clicked.
+   Must be completely hidden and non-interactive during loading, gameplay, and gameover.
+─────────────────────────────────────────────────────────────────────────── */
 .landing-compliance-bar {
   position: absolute;
   bottom: 0;
@@ -953,6 +956,20 @@
   padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(180deg, transparent 0%, rgba(5, 9, 16, 0.88) 100%);
   pointer-events: auto;
+  transition: opacity 0.3s ease;
+}
+
+/* Immediately disable and hide on loading, racing, done, or hidden states */
+.boot.loading-active .landing-compliance-bar,
+.boot.video-ready .landing-compliance-bar,
+.boot.done .landing-compliance-bar,
+.boot.hidden .landing-compliance-bar,
+#boot.done .landing-compliance-bar,
+body:has(#hud:not(.hidden)) .landing-compliance-bar {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .landing-compliance-bar a {
