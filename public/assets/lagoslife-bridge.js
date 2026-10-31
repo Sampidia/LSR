@@ -18,21 +18,21 @@
   'use strict';
 
   // Environment Detection
-  // CRITICAL: Any iframe embedding, or Vatar global, or Lagos Life domain, or param = LAGOS LIFE!
+  // CRITICAL: Any iframe embedding, or Lagos Life domain, or param = LAGOS LIFE platform!
+  // NOTE: window.Vatar is included via script tag globally, so hasVatarGlobal alone must NOT force Lagos Life mode on standalone web.
   const urlParams = new URLSearchParams(window.location.search);
   const isIframe = window.self !== window.top;
   const isLagosDomain = document.referrer.includes('lagoslife') ||
                         document.referrer.includes('naijalife') ||
                         document.referrer.includes('eliysites') ||
                         window.location.hostname.includes('lagoslife');
-  const hasVatarGlobal = typeof window.Vatar !== 'undefined';
   const hasParam = urlParams.has('vatar') ||
                    urlParams.get('platform') === 'lagoslife' ||
                    urlParams.has('sandbox') ||
                    urlParams.has('session');
 
   // Any iframe embedding represents Lagos Life virtual smartphone or its developer sandbox
-  const isLagosLife = isIframe || hasVatarGlobal || isLagosDomain || hasParam;
+  const isLagosLife = isIframe || isLagosDomain || hasParam;
 
   // Global Flags
   window.__IS_LAGOS_LIFE__ = isLagosLife;
@@ -102,10 +102,20 @@
     if (!purchaseId) return;
     try {
       console.log(`[LagosLifeBridge] Sending claim to server for purchaseId: "${purchaseId}", product: "${productId}"`);
-      const res = await fetch('/api/claim-purchase', {
+      
+      let session = null;
+      if (window.Vatar && typeof window.Vatar.session === 'function') {
+        try {
+          const s = await window.Vatar.session();
+          session = s?.session || s;
+        } catch (_) {}
+      }
+
+      const res = await fetch('/claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          session,
           purchaseId,
           productId,
           playerId: state.player?.id
@@ -270,6 +280,7 @@
 
     /**
      * Show Lagos Life Respawn Modal on Crash / Game Over
+     * Styled identically to the Cyber Stage Select Dialog in the Garage (Zero Emojis, Pure AAA Cyberpunk UI)
      */
     showRespawnSheet(score, distance) {
       if (!isLagosLife) return false;
@@ -278,50 +289,246 @@
       const existing = document.getElementById('ll-respawn-modal');
       if (existing) existing.remove();
 
+      // Ensure dialog styles are injected
+      if (!document.getElementById('ll-respawn-cyber-css')) {
+        const styleEl = document.createElement('style');
+        styleEl.id = 'll-respawn-cyber-css';
+        styleEl.textContent = `
+          #ll-respawn-modal {
+            position: fixed; inset: 0; z-index: 9999999;
+            display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% 45%, rgba(10, 16, 26, 0.88) 0%, rgba(3, 6, 12, 0.96) 100%);
+            backdrop-filter: blur(20px) saturate(190%);
+            -webkit-backdrop-filter: blur(20px) saturate(190%);
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #fff; padding: 16px; user-select: none;
+            animation: llModalFadeIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          @keyframes llModalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+          }
+          #ll-respawn-modal .cyber-stage-dialog {
+            position: relative; width: 100%; max-width: 440px;
+            background: linear-gradient(175deg, rgba(12, 18, 30, 0.98) 0%, rgba(5, 8, 16, 0.96) 100%);
+            backdrop-filter: blur(28px) saturate(200%);
+            -webkit-backdrop-filter: blur(28px) saturate(200%);
+            border: 1.5px solid rgba(0, 229, 255, 0.35);
+            border-radius: 20px;
+            padding: 24px 26px 20px;
+            box-shadow: 
+              0 30px 80px rgba(0, 0, 0, 0.95),
+              0 0 45px rgba(0, 229, 255, 0.2),
+              inset 0 1px 1px rgba(255, 255, 255, 0.25),
+              inset 0 -2px 10px rgba(0, 0, 0, 0.6);
+            box-sizing: border-box;
+            animation: llDialogPop 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          @keyframes llDialogPop {
+            from { transform: scale(0.93) translateY(14px); }
+            to { transform: scale(1) translateY(0); }
+          }
+          #ll-respawn-modal .stage-frame-reticle {
+            position: absolute; width: 14px; height: 14px;
+            border: 2px solid rgba(0, 229, 255, 0.55);
+            pointer-events: none;
+          }
+          #ll-respawn-modal .stage-frame-reticle.top-left { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+          #ll-respawn-modal .stage-frame-reticle.top-right { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+          #ll-respawn-modal .stage-frame-reticle.bottom-left { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+          #ll-respawn-modal .stage-frame-reticle.bottom-right { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+          #ll-respawn-modal .top-chamfer-notch {
+            position: absolute; top: -2px; right: 48px; width: 50px; height: 3px;
+            background: #00e5ff; box-shadow: 0 0 12px #00e5ff; border-radius: 2px;
+          }
+          #ll-respawn-modal .stage-header {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            margin-bottom: 16px; padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+          }
+          #ll-respawn-modal .stage-breadcrumb {
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+            color: #00e5ff; text-transform: uppercase;
+          }
+          #ll-respawn-modal .hud-blink-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #00e5ff; box-shadow: 0 0 8px #00e5ff;
+            animation: llDotPulse 1.8s infinite;
+          }
+          @keyframes llDotPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.75); }
+          }
+          #ll-respawn-modal .stage-title {
+            margin: 4px 0 0; font-size: 22px; font-weight: 800;
+            letter-spacing: 0.05em; text-transform: uppercase; color: #fff;
+            text-shadow: 0 0 16px rgba(0, 229, 255, 0.45);
+          }
+          #ll-respawn-modal .stage-subtitle {
+            margin: 3px 0 0; font-family: 'JetBrains Mono', monospace;
+            font-size: 11px; color: rgba(0, 229, 255, 0.75); letter-spacing: 0.04em;
+          }
+          #ll-respawn-modal .stage-close-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px; color: rgba(255, 255, 255, 0.7);
+            cursor: pointer; padding: 6px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s ease;
+          }
+          #ll-respawn-modal .stage-close-btn:hover {
+            background: rgba(255, 45, 85, 0.2);
+            border-color: rgba(255, 45, 85, 0.5);
+            color: #ff2d55;
+          }
+          #ll-respawn-modal .telemetry-card {
+            background: rgba(0, 229, 255, 0.04);
+            border: 1px solid rgba(0, 229, 255, 0.18);
+            border-radius: 12px; padding: 14px 16px; margin-bottom: 18px;
+            display: flex; align-items: center; gap: 14px;
+          }
+          #ll-respawn-modal .telemetry-icon-box {
+            width: 44px; height: 44px; border-radius: 10px;
+            background: rgba(0, 229, 255, 0.1);
+            border: 1px solid rgba(0, 229, 255, 0.35);
+            display: flex; align-items: center; justify-content: center;
+            color: #00e5ff; flex-shrink: 0;
+            box-shadow: 0 0 14px rgba(0, 229, 255, 0.25);
+          }
+          #ll-respawn-modal .telemetry-rows {
+            flex: 1; display: flex; flex-direction: column; gap: 4px;
+          }
+          #ll-respawn-modal .telemetry-row {
+            display: flex; justify-content: space-between; align-items: center;
+            font-family: 'JetBrains Mono', monospace; font-size: 11px;
+          }
+          #ll-respawn-modal .telemetry-label {
+            color: #7e8c9f; letter-spacing: 0.06em;
+          }
+          #ll-respawn-modal .telemetry-value {
+            color: #ffffff; font-weight: 700;
+          }
+          #ll-respawn-modal .respawn-action-btn {
+            width: 100%; padding: 14px 18px; border-radius: 12px;
+            border: none; cursor: pointer;
+            font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 800;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          #ll-respawn-modal .respawn-action-btn:active {
+            transform: scale(0.98);
+          }
+          #ll-respawn-modal .respawn-btn-cyan {
+            background: linear-gradient(135deg, #00e5ff 0%, #0099cc 100%);
+            color: #040914; box-shadow: 0 0 24px rgba(0, 229, 255, 0.45);
+          }
+          #ll-respawn-modal .respawn-btn-cyan:hover {
+            box-shadow: 0 0 32px rgba(0, 229, 255, 0.7); filter: brightness(1.08);
+          }
+          #ll-respawn-modal .respawn-btn-gold {
+            background: linear-gradient(135deg, #f5c518 0%, #d49e00 100%);
+            color: #050810; box-shadow: 0 0 24px rgba(245, 197, 24, 0.45);
+          }
+          #ll-respawn-modal .respawn-btn-gold:hover {
+            box-shadow: 0 0 32px rgba(245, 197, 24, 0.7); filter: brightness(1.08);
+          }
+          #ll-respawn-modal .respawn-btn-ghost {
+            width: 100%; background: transparent; border: none;
+            color: rgba(255, 255, 255, 0.45);
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            cursor: pointer; padding: 10px 0 4px; margin-top: 10px;
+            transition: color 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px;
+          }
+          #ll-respawn-modal .respawn-btn-ghost:hover {
+            color: #ffffff;
+          }
+        `;
+        document.head.appendChild(styleEl);
+      }
+
       const modal = document.createElement('div');
       modal.id = 'll-respawn-modal';
-      modal.style.cssText = [
-        'position:fixed;inset:0;z-index:999999',
-        'display:flex;align-items:center;justify-content:center',
-        'background:rgba(5,9,16,0.85);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)',
-        'font-family:"Outfit","Inter",sans-serif;color:#fff;padding:20px;user-select:none'
-      ].join(';');
 
       const lives = state.lives;
 
       modal.innerHTML = `
-        <div style="background:linear-gradient(165deg, rgba(16,24,40,0.92) 0%, rgba(8,13,24,0.96) 100%);
-                    border:1.5px solid rgba(0,240,255,0.45);border-radius:20px;padding:28px 24px 22px;
-                    max-width:340px;width:92vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.9),0 0 35px rgba(0,240,255,0.25)">
-          <div style="font-size:36px;margin-bottom:6px;filter:drop-shadow(0 0 16px rgba(255,42,68,0.6))">❤️</div>
-          <h2 style="margin:0 0 6px;font-size:20px;font-weight:900;letter-spacing:0.04em;text-transform:uppercase;color:#fff;text-shadow:0 0 14px rgba(0,240,255,0.5)">
-            Second Chance!
-          </h2>
-          <p style="margin:0 0 16px;font-size:12px;color:rgba(220,240,255,0.75);line-height:1.4">
-            Keep your current score (${Math.floor(score).toLocaleString()} M) and continue racing on Third Mainland Bridge!
-          </p>
+        <div class="cyber-stage-dialog" role="dialog" aria-modal="true" aria-labelledby="ll-respawn-title">
+          <!-- Cyber Reticles -->
+          <div class="stage-frame-reticle top-left"></div>
+          <div class="stage-frame-reticle top-right"></div>
+          <div class="stage-frame-reticle bottom-left"></div>
+          <div class="stage-frame-reticle bottom-right"></div>
+          <div class="top-chamfer-notch"></div>
 
-          <div id="ll-respawn-action-area" style="margin-bottom:12px">
+          <!-- Top Tactical Header -->
+          <div class="stage-header">
+            <div class="stage-header-left">
+              <div class="stage-breadcrumb">
+                <span class="hud-blink-dot"></span>
+                <span>EMERGENCY PROTOCOL // SYS-REVIVAL</span>
+              </div>
+              <h2 class="stage-title" id="ll-respawn-title">SECOND CHANCE</h2>
+              <div class="stage-subtitle">THIRD MAINLAND BRIDGE &bull; TELEMETRY LINK ACTIVE</div>
+            </div>
+
+            <button class="stage-close-btn" id="ll-close-x-btn" title="Decline (ESC)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Telemetry Data Box (Zero Emojis, Pure SVG HUD) -->
+          <div class="telemetry-card">
+            <div class="telemetry-icon-box">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+              </svg>
+            </div>
+            <div class="telemetry-rows">
+              <div class="telemetry-row">
+                <span class="telemetry-label">RECORDED RUN</span>
+                <span class="telemetry-value" style="color:#00e5ff">${Math.floor(score).toLocaleString()} M</span>
+              </div>
+              <div class="telemetry-row">
+                <span class="telemetry-label">EXTRA LIVES IN BANK</span>
+                <span class="telemetry-value" style="color:${lives > 0 ? '#22c55e' : '#f5c518'}">${lives} READY</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons Area -->
+          <div id="ll-respawn-action-area">
             ${lives > 0 ? `
-              <button id="ll-use-life-btn" style="width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;
-                background:linear-gradient(135deg,#00f0ff 0%,#00b4d8 100%);color:#040914;font-size:13px;font-weight:900;
-                letter-spacing:0.1em;text-transform:uppercase;box-shadow:0 0 24px rgba(0,240,255,0.5);display:flex;align-items:center;justify-content:center;gap:8px">
-                <span>❤️</span>
-                <span>Use Extra Life (${lives} Left)</span>
+              <button id="ll-use-life-btn" class="respawn-action-btn respawn-btn-cyan">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                <span>DEPLOY RESPAWN (${lives} REMAINING)</span>
               </button>
             ` : `
-              <button id="ll-buy-pack-btn" style="width:100%;padding:14px;border-radius:12px;border:none;cursor:pointer;
-                background:linear-gradient(135deg,#ffd700 0%,#ff8c00 100%);color:#000;font-size:13px;font-weight:900;
-                letter-spacing:0.1em;text-transform:uppercase;box-shadow:0 0 24px rgba(255,215,0,0.5);display:flex;align-items:center;justify-content:center;gap:8px">
-                <span>⚡</span>
-                <span>Buy 3 Lives (₦100) &amp; Revive</span>
+              <button id="ll-buy-pack-btn" class="respawn-action-btn respawn-btn-gold">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>UNLOCK 3 RESPAWNS (&#8358;100)</span>
               </button>
             `}
           </div>
 
-          <button id="ll-decline-btn" style="background:none;border:none;color:rgba(255,255,255,0.45);font-size:11px;
-            font-weight:600;letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;padding:8px;transition:color 0.2s">
-            No Thanks &bull; Finish Run
+          <button id="ll-decline-btn" class="respawn-btn-ghost">
+            <span>ABORT MISSION // SUBMIT RUN SCORE</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
           </button>
         </div>
       `;
@@ -331,10 +538,15 @@
       function doRevive() {
         state.hasRespawnedThisRun = true;
         modal.remove();
-        // Fire real engine respawn event
+        // Fire engine respawn event to resume active run
         window.dispatchEvent(new CustomEvent('ad:reward', {
           detail: { type: 'extraLife' }
         }));
+      }
+
+      function doFinish() {
+        modal.remove();
+        LagosLifeBridge.submitScore(score, distance);
       }
 
       // Bind Use Life
@@ -350,27 +562,38 @@
       const buyBtn = modal.querySelector('#ll-buy-pack-btn');
       if (buyBtn) {
         buyBtn.addEventListener('click', async () => {
-          buyBtn.innerHTML = '<span>⚡ Opening Lagos Life Pay Sheet...</span>';
-          buyBtn.style.opacity = '0.7';
+          buyBtn.innerHTML = `
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite">
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+            </svg>
+            <span>CONNECTING TO VATAR PAY...</span>
+          `;
+          buyBtn.style.opacity = '0.75';
+          buyBtn.style.pointerEvents = 'none';
+
           const res = await LagosLifeBridge.purchaseExtraLives();
           if (res && res.success) {
-            saveLives(state.lives - 1); // Use 1 immediately to revive, 2 stored in bank
+            saveLives(state.lives - 1); // 1 used instantly to revive, 2 in bank
             doRevive();
           } else {
-            buyBtn.innerHTML = '<span>⚡ Buy 3 Lives (₦100) &amp; Revive</span>';
+            buyBtn.innerHTML = `
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              <span>UNLOCK 3 RESPAWNS (&#8358;100)</span>
+            `;
             buyBtn.style.opacity = '1';
+            buyBtn.style.pointerEvents = 'auto';
           }
         });
       }
 
-      // Bind Decline / Finish
+      // Bind Decline / Close
       const declineBtn = modal.querySelector('#ll-decline-btn');
-      if (declineBtn) {
-        declineBtn.addEventListener('click', () => {
-          modal.remove();
-          LagosLifeBridge.submitScore(score, distance);
-        });
-      }
+      if (declineBtn) declineBtn.addEventListener('click', doFinish);
+
+      const closeXBtn = modal.querySelector('#ll-close-x-btn');
+      if (closeXBtn) closeXBtn.addEventListener('click', doFinish);
 
       return true;
     },

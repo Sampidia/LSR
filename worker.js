@@ -45,10 +45,12 @@ async function verifyAndDeliverPurchase(purchaseId, vatarSecret) {
   console.log(`[Worker] Verify response (${verifyRes.status}):`, JSON.stringify(purchaseData));
 
   // Step 2: Mark purchase delivered
-  console.log(`[Worker] Marking purchase "${purchaseId}" delivered...`);
+  // Lagos Life API requires POST /purchases/{id}/deliver
+  console.log(`[Worker] Step 2: Marking purchase "${purchaseId}" delivered...`);
   const deliverRes = await fetch(`${LAGOS_LIFE_API}/purchases/${encodeURIComponent(purchaseId)}/deliver`, {
     method: 'POST',
-    headers: authHeader
+    headers: authHeader,
+    body: JSON.stringify({})
   });
 
   let deliverData = null;
@@ -72,16 +74,36 @@ export default {
 
     // ── 1. Client-Triggered Purchase Claim Endpoint ────────────────────
     // Called by the game client right after Vatar.purchase() completes
-    if (url.pathname === '/api/claim-purchase' || url.pathname === '/api/vatar-claim') {
+    // Compatible with /claim (official docs), /api/claim, /api/claim-purchase, /api/vatar-claim
+    if (url.pathname === '/claim' || url.pathname === '/api/claim' || url.pathname === '/api/claim-purchase' || url.pathname === '/api/vatar-claim') {
       if (request.method !== 'POST') {
         return new Response('Method Not Allowed', { status: 405 });
       }
 
       try {
         const body = await request.json();
-        const { purchaseId, productId, playerId } = body;
+        const purchaseId = body.purchaseId || body.data?.purchaseId || body.id;
+        const productId = body.productId || body.sku;
+        const playerId = body.playerId;
+        const session = body.session;
 
         console.log(`[Worker] Claim request received for purchaseId: "${purchaseId}", product: "${productId}", player: "${playerId}"`);
+
+        // If session token provided, optionally verify session with Lagos Life API
+        if (session && env.VATAR_SECRET) {
+          try {
+            await fetch(`${LAGOS_LIFE_API}/session/verify`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${env.VATAR_SECRET.trim()}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ session })
+            });
+          } catch (e) {
+            console.warn('[Worker] Session verify warning:', e.message);
+          }
+        }
 
         const vatarSecret = env.VATAR_SECRET;
         const result = await verifyAndDeliverPurchase(purchaseId, vatarSecret);
@@ -110,7 +132,8 @@ export default {
     }
 
     // ── 2. Webhook Endpoint for Async Lagos Life Events ─────────────────
-    if (url.pathname === '/api/vatar-webhook') {
+    // Supports /api/vatar-webhook, /webhook, and /api/webhook
+    if (url.pathname === '/api/vatar-webhook' || url.pathname === '/webhook' || url.pathname === '/api/webhook') {
       if (request.method !== 'POST') {
         return new Response('Method Not Allowed', { status: 405 });
       }
@@ -123,7 +146,7 @@ export default {
         // Verify HMAC signature if secret is configured in Cloudflare
         if (webhookSecret && signature) {
           const encoder = new TextEncoder();
-          const keyData = encoder.encode(webhookSecret);
+          const keyData = encoder.encode(webhookSecret.trim());
           const cryptoKey = await crypto.subtle.importKey(
             'raw',
             keyData,
@@ -132,8 +155,10 @@ export default {
             ['verify']
           );
 
+          // Strip sha256= or v1= prefix before matching hex bytes
+          const cleanSig = signature.replace(/^(sha256=|v1=)/i, '').trim();
           const sigBytes = new Uint8Array(
-            signature.match(/[\da-f]{2}/gi)?.map(h => parseInt(h, 16)) || []
+            cleanSig.match(/[\da-f]{2}/gi)?.map(h => parseInt(h, 16)) || []
           );
 
           const isValid = await crypto.subtle.verify(
@@ -144,6 +169,8 @@ export default {
           );
 
           if (!isValid) {
+            console.warn('[Worker] Webhook HMAC signature mismatch. Signature:', signature);
+            // In production, reject if signature fails
             return new Response(JSON.stringify({ error: 'Invalid webhook signature' }), {
               status: 401,
               headers: { 'Content-Type': 'application/json' }
@@ -161,19 +188,35 @@ export default {
           });
         }
 
-        const purchaseId = payload.purchaseId || payload.id;
-        console.log(`[VatarWebhook] Received event "${payload.event}" for purchaseId: "${purchaseId}"`);
+        console.log('[Worker] Webhook raw payload received:', JSON.stringify(payload));
 
-        // If this is a purchase event and we have purchaseId, verify & deliver
+        // In Lagos Life webhooks, event type is "purchase.paid" and real purchaseId is inside data:
+        // { id: "evt_...", type: "purchase.paid", data: { purchaseId: "pur_...", productId: "..." } }
+        const eventType = payload.type || payload.event;
+        const purchaseId = payload.data?.purchaseId ||
+                           payload.data?.id ||
+                           payload.purchase?.purchaseId ||
+                           payload.purchase?.id ||
+                           payload.purchaseId ||
+                           (payload.id && !payload.id.startsWith('evt_') ? payload.id : null);
+
+        console.log(`[VatarWebhook] Event: "${eventType}", Extracted purchaseId: "${purchaseId}"`);
+
+        // If purchaseId extracted and VATAR_SECRET configured, verify with server & mark delivered
         if (purchaseId && env.VATAR_SECRET) {
           try {
-            await verifyAndDeliverPurchase(purchaseId, env.VATAR_SECRET);
+            const deliverResult = await verifyAndDeliverPurchase(purchaseId, env.VATAR_SECRET);
+            console.log('[VatarWebhook] verifyAndDeliver completed:', JSON.stringify(deliverResult));
           } catch (e) {
             console.warn('[VatarWebhook] verifyAndDeliver warning:', e.message);
           }
+        } else if (!env.VATAR_SECRET) {
+          console.warn('[VatarWebhook] Missing VATAR_SECRET in environment; cannot verify purchase.');
+        } else {
+          console.warn('[VatarWebhook] No purchaseId found in payload data.');
         }
 
-        return new Response(JSON.stringify({ status: 'success', received: true }), {
+        return new Response(JSON.stringify({ status: 'success', received: true, purchaseId }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' }
         });
