@@ -3014,6 +3014,12 @@
     }
 
     window.addEventListener('lsr:entitlementsUpdated', () => {
+      // Re-verify currentCarKey ownership on player account change
+      if (window.LagosLifeBridge && window.LagosLifeBridge.isLagosLife() && !window.LagosLifeBridge.hasCar(currentCarKey)) {
+        currentCarKey = 'flying_t';
+        highlightCarCard('flying_t');
+        loadCar('flying_t');
+      }
       updateUI(currentCarKey);
       updateVIPBadges();
     });

@@ -5,6 +5,7 @@
  *  - Mode 1: Lagos Life Virtual Smartphone (lagoslife.app & Sandbox)
  *            • Vatar Games SDK (vatar-games-v1.js) active
  *            • Microtransactions (VIP Cars ₦300, Extra Lives ₦100)
+ *            • Server-side purchase verification & delivery
  *            • Platform Leaderboard (Vatar.leaderboard & Vatar.submitScore)
  *            • External ads completely disabled (safe for virtual phone iframe)
  *  - Mode 2: Standalone Web (lsr.sampidia.com)
@@ -70,15 +71,52 @@
 
   function saveEntitlements() {
     try {
-      localStorage.setItem('lsr_ll_entitlements', JSON.stringify(Array.from(state.entitlements)));
+      const data = JSON.stringify(Array.from(state.entitlements));
+      if (state.player && state.player.id) {
+        localStorage.setItem('lsr_ll_entitlements_' + state.player.id, data);
+      } else if (!isLagosLife) {
+        localStorage.setItem('lsr_ll_entitlements', data);
+      }
     } catch (_) {}
   }
 
   function saveLives(n) {
     state.lives = Math.max(0, n);
     try {
-      localStorage.setItem('lsr_ll_lives', String(state.lives));
+      if (state.player && state.player.id) {
+        localStorage.setItem('lsr_ll_lives_' + state.player.id, String(state.lives));
+      } else if (!isLagosLife) {
+        localStorage.setItem('lsr_ll_lives', String(state.lives));
+      }
     } catch (_) {}
+  }
+
+  /**
+   * Notify our Cloudflare Worker to verify purchase with Lagos Life server
+   * and mark it as delivered via POST /purchases/{id}/deliver.
+   * This completes the two sandbox checklist items:
+   * 1. A purchase verified by your server
+   * 2. One marked delivered
+   */
+  async function claimPurchaseWithServer(purchaseId, productId) {
+    if (!purchaseId) return;
+    try {
+      console.log(`[LagosLifeBridge] Sending claim to server for purchaseId: "${purchaseId}", product: "${productId}"`);
+      const res = await fetch('/api/claim-purchase', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          purchaseId,
+          productId,
+          playerId: state.player?.id
+        })
+      });
+      const data = await res.json();
+      console.log('[LagosLifeBridge] Server claim response:', data);
+      return data;
+    } catch (err) {
+      console.warn('[LagosLifeBridge] Server claim error:', err);
+    }
   }
 
   // Bridge Public API
@@ -121,9 +159,16 @@
         try {
           const res = await window.Vatar.purchase(sku);
           // SDK resolves with { purchaseId, productId }
-          if (res && (res.productId === sku || res.purchaseId || res.success)) {
+          const purchaseId = res?.purchaseId || res?.id;
+          if (res && (res.productId === sku || purchaseId || res.success)) {
             state.entitlements.add(sku);
             saveEntitlements();
+
+            // Server-to-server verification & mark delivered
+            if (purchaseId) {
+              await claimPurchaseWithServer(purchaseId, sku);
+            }
+
             window.dispatchEvent(new CustomEvent('lsr:entitlementsUpdated', { detail: { sku } }));
             return { success: true };
           }
@@ -155,8 +200,15 @@
       if (window.Vatar && typeof window.Vatar.purchase === 'function') {
         try {
           const res = await window.Vatar.purchase(sku);
-          if (res && (res.productId === sku || res.purchaseId || res.success)) {
+          const purchaseId = res?.purchaseId || res?.id;
+          if (res && (res.productId === sku || purchaseId || res.success)) {
             saveLives(state.lives + 3);
+
+            // Server-to-server verification & mark delivered
+            if (purchaseId) {
+              await claimPurchaseWithServer(purchaseId, sku);
+            }
+
             return { success: true, lives: state.lives };
           }
           return { success: false };
@@ -302,7 +354,7 @@
           buyBtn.style.opacity = '0.7';
           const res = await LagosLifeBridge.purchaseExtraLives();
           if (res && res.success) {
-            saveLives(state.lives - 1); // Use 1 immediately to revive, 2 stored
+            saveLives(state.lives - 1); // Use 1 immediately to revive, 2 stored in bank
             doRevive();
           } else {
             buyBtn.innerHTML = '<span>⚡ Buy 3 Lives (₦100) &amp; Revive</span>';
@@ -347,19 +399,50 @@
       try {
         if (typeof window.Vatar.init === 'function') {
           window.Vatar.init().then(info => {
-            if (info && info.player) state.player = info.player;
+            if (info && info.player) {
+              state.player = info.player;
+              // Clear in-memory entitlements so multiple accounts on the same phone never cross-contaminate
+              state.entitlements.clear();
+              state.lives = 0;
+              // Restore entitlements strictly scoped to this specific player ID
+              if (info.player.id) {
+                try {
+                  const playerCached = localStorage.getItem('lsr_ll_entitlements_' + info.player.id);
+                  if (playerCached) {
+                    const arr = JSON.parse(playerCached);
+                    arr.forEach(item => state.entitlements.add(item));
+                  }
+                  const playerLives = parseInt(localStorage.getItem('lsr_ll_lives_' + info.player.id) || '0', 10);
+                  if (!isNaN(playerLives) && playerLives > 0) {
+                    state.lives = playerLives;
+                  }
+                } catch (_) {}
+              }
+              window.dispatchEvent(new CustomEvent('lsr:entitlementsUpdated'));
+            }
             if (info && info.mode) state.mode = info.mode;
             console.log('[LagosLifeBridge] Vatar SDK initialized. Player:', info?.player?.name, 'Mode:', info?.mode);
 
-            // Fetch past active purchases
+            // Fetch past / pending purchases to restore consistency
             if (typeof window.Vatar.purchases === 'function') {
               window.Vatar.purchases().then(purchases => {
                 if (Array.isArray(purchases)) {
-                  purchases.forEach(p => {
+                  purchases.forEach(async p => {
+                    const purchaseId = p.purchaseId || p.id;
                     const sku = typeof p === 'string' ? p : (p.productId || p.sku);
-                    if (sku) state.entitlements.add(sku);
+                    if (sku) {
+                      if (sku === 'respawn_pack_3') {
+                        saveLives(state.lives + 3);
+                      } else {
+                        state.entitlements.add(sku);
+                        saveEntitlements();
+                      }
+                    }
+                    // Auto-claim undelivered items with server
+                    if (purchaseId) {
+                      await claimPurchaseWithServer(purchaseId, sku);
+                    }
                   });
-                  saveEntitlements();
                   window.dispatchEvent(new CustomEvent('lsr:entitlementsUpdated'));
                 }
               }).catch(() => {});
@@ -371,7 +454,8 @@
 
         // Listen for background purchase completions
         if (typeof window.Vatar.onPurchase === 'function') {
-          window.Vatar.onPurchase(p => {
+          window.Vatar.onPurchase(async p => {
+            const purchaseId = p?.purchaseId || p?.id;
             const sku = typeof p === 'string' ? p : (p?.productId || p?.sku);
             if (sku) {
               if (sku === 'respawn_pack_3') {
@@ -381,6 +465,10 @@
                 saveEntitlements();
               }
               window.dispatchEvent(new CustomEvent('lsr:entitlementsUpdated', { detail: { sku } }));
+            }
+            // Auto-claim with server to verify & mark delivered
+            if (purchaseId) {
+              await claimPurchaseWithServer(purchaseId, sku);
             }
           });
         }
